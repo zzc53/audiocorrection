@@ -1170,6 +1170,7 @@ class AudioEngine {
     this._isRecording = false;
   }
 
+  /** 设置输出音量（dB），先取消已调度值再设定，兼容 Safari */
   setOutVolume(dB) {
     if (!this.masterGain) return;
     const gain = Math.pow(10, dB / 20);
@@ -1177,6 +1178,7 @@ class AudioEngine {
     this.masterGain.gain.setValueAtTime(gain, this.ctx.currentTime);
   }
 
+  /** 设置输入增益（dB），先取消已调度值再设定 */
   setInGain(dB) {
     if (!this.micGain) return;
     const gain = Math.pow(10, dB / 20);
@@ -1417,7 +1419,10 @@ class AudioEngine {
     return Math.sqrt(sumSq / copied);
   }
 
-  /** 正交解调测量相位（度） */
+  /** 用正交解调测量信号在指定频率的相位（度）
+   *  原理：将输入信号分别乘以 cos(2πft) 和 sin(2πft)，低通滤波后 atan2(Q,I)
+   *  freq=信号频率, sampleRate=采样率, buffer=输入数据块数组, startSample=起始采样点
+   *  totalLen=总采样数, settleCount=稳定期（跳过）, measureCount=测量窗长 */
   _measurePhase(freq, sampleRate, buffer, startSample, totalLen, settleCount, measureCount) {
     const bufBeforeStart = startSample;
     const samplesAfterStart = totalLen - bufBeforeStart;
@@ -1503,16 +1508,18 @@ class PEQManager {
     this._notify();
   }
 
+  /** 清除所有 PEQ */
   clear() {
     this.list = [];
     this._notify();
   }
 
+  /** 触发变更回调（通知图表重绘等） */
   _notify() {
     if (this._onChange) this._onChange(this.list);
   }
 
-  /** 计算在给定频率下的总增益 (dB)，使用 peaking filter 公式 */
+  /** 计算在给定频率下的总增益 (dB)，叠加所有 PEQ band 的 peaking filter 响应 */
   getGainAt(freq, sampleRate = 48000) {
     let totalDB = 0;
     for (const peq of this.list) {
@@ -1570,13 +1577,15 @@ function updateAutoPeqTarget() {
 
 // ========================================================================
 //  自动 PEQ — 根据频响数据生成最优 PEQ 参数
+//  流程：归一化 → 计算残差 → 平滑 → 极值检测 → 排序筛选 → 局部优化(gain/Q) → 全局微调
 // ========================================================================
 function generateAutoPEQ(freqData, count, targetDB, freqLow, freqHigh, maxGain, tolerance) {
   if (!freqData || freqData.length < 5) return [];
 
   maxGain = maxGain > 0 ? maxGain : 20;
   tolerance = tolerance != null ? tolerance : 3;
-  // count 较多时自动降低极值检测阈值，让更多小峰谷入选
+  // count 较多时自动降低极值检测阈值（peakTol），让更多小峰谷入选
+  // count=5~10 时 peakTol=tolerance（默认3dB），count=20 时降至 tolerance×0.6≈1.8dB
   const peakTol = count <= 10 ? tolerance : Math.max(0.5, tolerance * (1 - 0.4 * (count - 10) / 10));
 
   const freqs = freqData.map(d => d.freq);
@@ -1621,7 +1630,8 @@ function generateAutoPEQ(freqData, count, targetDB, freqLow, freqHigh, maxGain, 
     }
   }
 
-  // peaking filter 在指定频率的增益
+  // peaking filter（峰式滤波器）在指定频率的增益（dB），基于 RBJ 双二阶公式
+  // f0=中心频率, gainDB=增益, Q=品质因数, freq=目标频率, sampleRate=采样率
   function peakingGain(f0, gainDB, Q, freq) {
     const A = Math.pow(10, gainDB / 40);
     const w0 = 2 * Math.PI * f0 / 48000;
@@ -1637,79 +1647,7 @@ function generateAutoPEQ(freqData, count, targetDB, freqLow, freqHigh, maxGain, 
     return 10 * Math.log10(Math.max((nr*nr+ni*ni)/(dr*dr+di*di), 1e-12));
   }
 
-  // 计算 count 个 PEQ 的叠加曲线在采样点的总增益
-  function computeTotalGain(peqFreqs, gains, Qs, sampleFreqs) {
-    return sampleFreqs.map((f, i) => {
-      let total = 0;
-      for (let j = 0; j < peqFreqs.length; j++) {
-        total += peakingGain(peqFreqs[j], gains[j], Qs[j], f);
-      }
-      return total;
-    });
-  }
-
-  // 计算 RMS 误差
-  function computeError(target, actual) {
-    let sumSq = 0;
-    for (let i = 0; i < target.length; i++) {
-      const d = target[i] - actual[i];
-      sumSq += d * d;
-    }
-    return Math.sqrt(sumSq / target.length);
-  }
-
-  // 正则化最小二乘求解器（固定 Q）
-  function solveGains(peqFreqs, Qs, sampleFreqs, target, lambda) {
-    const n = peqFreqs.length;
-    const A = [];
-    for (let i = 0; i < n; i++) {
-      A[i] = [];
-      for (let j = 0; j < n; j++) {
-        A[i][j] = peakingGain(peqFreqs[j], 1, Qs[j], sampleFreqs[i]);
-      }
-    }
-    // AtA = A^T * A + λ²I
-    const AtA = [];
-    const Atb = [];
-    for (let i = 0; i < n; i++) {
-      AtA[i] = [];
-      for (let j = 0; j < n; j++) {
-        let sum = 0;
-        for (let k = 0; k < n; k++) sum += A[k][i] * A[k][j];
-        AtA[i][j] = sum;
-      }
-      AtA[i][i] += lambda * lambda;
-      let sum = 0;
-      for (let k = 0; k < n; k++) sum += A[k][i] * target[k];
-      Atb.push(sum);
-    }
-    // 高斯消元
-    const m = n;
-    const M = AtA.map((row, i) => [...row, Atb[i]]);
-    for (let col = 0; col < m - 1; col++) {
-      let maxRow = col;
-      for (let row = col + 1; row < m; row++) {
-        if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow = row;
-      }
-      [M[col], M[maxRow]] = [M[col], M[maxRow]];
-      if (Math.abs(M[col][col]) < 1e-12) continue;
-      for (let row = col + 1; row < m; row++) {
-        const factor = M[row][col] / M[col][col];
-        for (let j = col; j <= m; j++) M[row][j] -= factor * M[col][j];
-      }
-    }
-    const x = new Array(m).fill(0);
-    for (let i = m - 1; i >= 0; i--) {
-      if (Math.abs(M[i][i]) < 1e-12) continue;
-      x[i] = M[i][m];
-      for (let j = i + 1; j < m; j++) x[i] -= M[i][j] * x[j];
-      x[i] /= M[i][i];
-    }
-    return x;
-  }
-
-  // ======== 极值点排序 + AutoEq Q 公式 ========
-  // 一次性找出所有显著极值点
+  // ======== 极值点检测：在平滑残差上找波峰波谷，再定位到原始残差的真正极值 ========
   const allPeaks = [];
   for (let i = 4; i < residual.length - 4; i++) {
     const isPeak = residual[i] > residual[i-1] && residual[i] > residual[i+1] && residual[i] >= residual[i-2] && residual[i] >= residual[i+2];
