@@ -1087,7 +1087,7 @@ class AudioEngine {
     this.channelGainR.gain.value = 1;
     this.masterGain.connect(this.channelSplitter);
     this.channelSplitter.connect(this.channelGainL, 0, 0);
-    this.channelSplitter.connect(this.channelGainR, 1, 0);
+    this.channelSplitter.connect(this.channelGainR, 0, 0);
     this.channelGainL.connect(this.channelMerger, 0, 0);
     this.channelGainR.connect(this.channelMerger, 0, 1);
     this.channelMerger.connect(this.masterAnalyser);
@@ -1893,7 +1893,7 @@ class ChartRenderer {
     const freqs = data.map(d => d.freq);
     const rawDB = data.map(d => d.dB_norm);
     const rawPhase = data.map(d => d.phase);
-    const hasPhase = rawPhase && rawPhase.some(p => p != null) && new Set(rawPhase).size > 1;
+    const hasPhase = rawPhase && rawPhase.some(p => p != null && !isNaN(p));
 
     // === 双 Y 轴范围计算 ===
     let correctedDB = null;
@@ -1923,10 +1923,11 @@ class ChartRenderer {
     const rMax = rightMaxAbs + rightPad;
 
     document.getElementById('yRangeLabel').textContent =
-      `L ${lMin.toFixed(0)}~${lMax.toFixed(0)}  R ${rMin.toFixed(0)}~${rMax.toFixed(0)} dB`;
+      `L ${lMin.toFixed(0)}~${lMax.toFixed(0)}  R ${rMin.toFixed(0)}~${rMax.toFixed(0)} dB` +
+      (hasPhase ? ' · Phase ✓' : '');
 
     // Axes (双Y + 精细X)
-    this._drawAxes(ctx, margin, w, h, plotW, plotH, freqs, lMin, lMax, rMin, rMax, hasPhase);
+    this._drawAxes(ctx, margin, w, h, plotW, plotH, freqs, lMin, lMax, rMin, rMax);
 
     const logLow = Math.log(freqs[0]);
     const logHigh = Math.log(freqs[freqs.length - 1]);
@@ -2005,23 +2006,27 @@ class ChartRenderer {
     }
 
     // === Draw phase curve (深灰，右轴 -180~180) ===
-    if (hasPhase) {
+    if (rawPhase) {
       const pMin = -180, pMax = 180;
       const yScaleP = (deg) => margin.top + plotH - ((deg - pMin) / (pMax - pMin)) * plotH;
       ctx.beginPath();
       let started = false;
+      let hasAny = false;
       for (let i = 0; i < data.length; i++) {
-        if (rawPhase[i] == null) continue;
+        if (rawPhase[i] == null || isNaN(rawPhase[i])) continue;
+        hasAny = true;
         const x = xScale(freqs[i]);
         const y = yScaleP(rawPhase[i]);
         if (!started) { ctx.moveTo(x, y); started = true; }
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = 'rgba(139, 148, 158, 1)';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([2, 4]);
-      ctx.stroke();
-      ctx.setLineDash([]);
+      if (hasAny) {
+        ctx.strokeStyle = 'rgba(139, 148, 158, 1)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([2, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
     }
   }
 
@@ -2038,7 +2043,7 @@ class ChartRenderer {
     }
   }
 
-  _drawAxes(ctx, margin, w, h, plotW, plotH, freqs, lMin, lMax, rMin, rMax, hasPhase) {
+  _drawAxes(ctx, margin, w, h, plotW, plotH, freqs, lMin, lMax, rMin, rMax) {
     const logLow = Math.log(freqs[0]);
     const logHigh = Math.log(freqs[freqs.length - 1]);
     const xPos = (f) => {
@@ -2127,27 +2132,25 @@ class ChartRenderer {
     ctx.restore();
 
     // ---- 第三右 Y 轴 (Phase) ----
-    if (hasPhase) {
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#6e7681';
-      ctx.font = '9px -apple-system, sans-serif';
-      const numYP = 6;
-      const pMin = -180, pMax = 180;
-      for (let i = 0; i <= numYP; i++) {
-        const deg = pMin + (pMax - pMin) * i / numYP;
-        const y = margin.top + plotH - (i / numYP) * plotH;
-        ctx.fillText(`${deg}°`, margin.left + plotW + 30, y + 3);
-      }
-      // 相位轴标签
-      ctx.save();
-      ctx.translate(w - 3, margin.top + plotH / 2);
-      ctx.rotate(-Math.PI / 2);
-      ctx.fillStyle = '#6e7681';
-      ctx.font = '9px -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Phase °', 0, 0);
-      ctx.restore();
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#6e7681';
+    ctx.font = '9px -apple-system, sans-serif';
+    const numYP = 6;
+    const pMin = -180, pMax = 180;
+    for (let i = 0; i <= numYP; i++) {
+      const deg = pMin + (pMax - pMin) * i / numYP;
+      const y = margin.top + plotH - (i / numYP) * plotH;
+      ctx.fillText(`${deg}°`, margin.left + plotW + 30, y + 3);
     }
+    // 相位轴标签
+    ctx.save();
+    ctx.translate(w - 3, margin.top + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = '#6e7681';
+    ctx.font = '9px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Phase °', 0, 0);
+    ctx.restore();
 
     // Hz 单位
     ctx.textAlign = 'center';
@@ -2707,9 +2710,15 @@ function exportData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `acoustic-measurement-${Date.now()}.json`;
+  a.download = `acoustic-measurement-${ts()}.json`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function ts() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
 function exportRew() {
@@ -2735,7 +2744,7 @@ function exportRew() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `measurement-rew-${Date.now()}.txt`;
+  a.download = `measurement-rew-${ts()}.txt`;
   a.click();
   URL.revokeObjectURL(url);
 }
