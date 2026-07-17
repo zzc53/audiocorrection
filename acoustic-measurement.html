@@ -68,8 +68,11 @@ h3 {
 }
 @media (max-width: 900px) {
   .app-grid { flex-direction: column; }
-  .left-col { width: auto !important; }
+  .left-col { width: 100% !important; }
+  .right-col { width: 100%; }
+  .canvas-wrap canvas { width: 100% !important; height: auto !important; }
   .resizer { display: none; }
+  body { padding: 16px 10px; }
 }
 .panel {
   background: #161b22;
@@ -304,6 +307,26 @@ input[type="range"]::-moz-range-thumb {
 .grow { flex: 1; }
 .mt-6 { margin-top: 6px; }
 .mb-6 { margin-bottom: 6px; }
+
+/* ===== Confirm Dialog ===== */
+.confirm-overlay {
+  position: fixed; top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.6);
+  display:flex; align-items:center; justify-content:center;
+  z-index:9999;
+}
+.confirm-box {
+  background:#161b22; border:1px solid #30363d; border-radius:12px;
+  padding:28px 32px; min-width:340px; max-width:460px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.5);
+}
+.confirm-box p {
+  color:#c9d1d9; font-size:14px; line-height:1.6; margin:0 0 24px;
+}
+.confirm-actions {
+  display:flex; gap:10px; justify-content:flex-end;
+}
+.confirm-actions .btn { min-width:90px; }
 </style>
 </head>
 <body>
@@ -465,7 +488,7 @@ input[type="range"]::-moz-range-thumb {
       <button id="clearPeqBtn" class="btn btn-secondary btn-sm">清除</button>
       <span id="peqCount" style="font-size:12px;color:#8b949e;margin-left:auto">0 个</span>
     </div>
-    <div class="panel-row" style="flex-wrap:nowrap;gap:16px;padding:8px 0;border-bottom:1px solid #21262d;margin-bottom:6px">
+    <div class="panel-row" style="flex-wrap:wrap;gap:8px;padding:8px 0;border-bottom:1px solid #21262d;margin-bottom:6px">
       <span style="font-size:12px;color:#8b949e;white-space:nowrap" data-i18n="autoPeqLabel">自动 PEQ</span>
       <span style="display:inline-flex;align-items:center;gap:4px">
         <label style="font-size:11px" data-i18n="autoPeqCount">数量</label>
@@ -556,6 +579,9 @@ const STR = {
     autoPeqTolerance:'容差',
     autoPeqBtn:'▶ 生成',
         targetSpl:'目标 SPL',
+    confirmClearPeq:'自动计算 PEQ 将清除当前所有 PEQ 配置，是否继续？',
+    confirmOk:'确定继续',
+    confirmCancel:'取消',
     noDataLabel:'无测量数据',
     exportBtn:'📤 导出数据', importBtn:'📥 导入数据',
     exportRew:'📤 REW',
@@ -599,6 +625,9 @@ const STR = {
     autoPeqTolerance:'Tolerance',
     autoPeqBtn:'▶ Generate',
         targetSpl:'Target SPL',
+    confirmClearPeq:'Auto-calculate PEQ will clear all current PEQ settings. Continue?',
+    confirmOk:'Continue',
+    confirmCancel:'Cancel',
     noDataLabel:'No data',
     exportBtn:'📤 Export', importBtn:'📥 Import',
     exportRew:'📤 REW',
@@ -642,6 +671,9 @@ const STR = {
     autoPeqTolerance:'Tolérance',
     autoPeqBtn:'▶ Générer',
         targetSpl:'SPL cible',
+    confirmClearPeq:'Le calcul automatique du PEQ effacera tous les réglages PEQ actuels. Continuer\u00a0?',
+    confirmOk:'Continuer',
+    confirmCancel:'Annuler',
     noDataLabel:'Aucune donnée',
     exportBtn:'📤 Exporter', importBtn:'📥 Importer',
     exportRew:'📤 REW',
@@ -686,6 +718,9 @@ const STR = {
     autoPeqTolerance:'Tolerancia',
     autoPeqBtn:'▶ Generar',
         targetSpl:'SPL objetivo',
+    confirmClearPeq:'El cálculo automático de PEQ borrará todos los ajustes actuales. ¿Continuar?',
+    confirmOk:'Continuar',
+    confirmCancel:'Cancelar',
     noDataLabel:'Sin datos',
     exportBtn:'📤 Exportar', importBtn:'📥 Importar',
     exportRew:'📤 REW',
@@ -731,6 +766,9 @@ const STR = {
     autoPeqTolerance:'Допуск',
     autoPeqBtn:'▶ Создать',
         targetSpl:'Целевой SPL',
+    confirmClearPeq:'Автоматический расчет PEQ удалит все текущие настройки PEQ. Продолжить?',
+    confirmOk:'Продолжить',
+    confirmCancel:'Отмена',
     noDataLabel:'Нет данных',
     exportBtn:'📤 Экспорт', importBtn:'📥 Импорт',
     exportRew:'📤 REW',
@@ -775,6 +813,9 @@ const STR = {
     autoPeqTolerance:'Toleranz',
     autoPeqBtn:'▶ Erzeugen',
         targetSpl:'Ziel-SPL',
+    confirmClearPeq:'Die automatische PEQ-Berechnung löscht alle aktuellen PEQ-Einstellungen. Fortfahren?',
+    confirmOk:'Fortfahren',
+    confirmCancel:'Abbrechen',
     noDataLabel:'Keine Daten',
     exportBtn:'📤 Exportieren', importBtn:'📥 Importieren',
     exportRew:'📤 REW',
@@ -819,6 +860,9 @@ const STR = {
     autoPeqTolerance:'許容差',
     autoPeqBtn:'▶ 生成',
         targetSpl:'目標 SPL',
+    confirmClearPeq:'自動PEQ計算を実行すると、現在のPEQ設定がすべて消去されます。続行しますか？',
+    confirmOk:'続行',
+    confirmCancel:'キャンセル',
     noDataLabel:'データなし',
     exportBtn:'📤 エクスポート', importBtn:'📥 インポート',
     exportRew:'📤 REW',
@@ -863,6 +907,9 @@ const STR = {
     autoPeqTolerance:'공차',
     autoPeqBtn:'▶ 생성',
         targetSpl:'목표 SPL',
+    confirmClearPeq:'자동 PEQ 계산을 실행하면 현재 PEQ 설정이 모두 지워집니다. 계속하시겠습니까?',
+    confirmOk:'계속',
+    confirmCancel:'취소',
     noDataLabel:'데이터 없음',
     exportBtn:'📤 내보내기', importBtn:'📥 가져오기',
     exportRew:'📤 REW',
@@ -907,6 +954,9 @@ const STR = {
     autoPeqTolerance:'Tolerância',
     autoPeqBtn:'▶ Gerar',
         targetSpl:'SPL alvo',
+    confirmClearPeq:'O cálculo automático de PEQ limpará todas as configurações atuais de PEQ. Continuar?',
+    confirmOk:'Continuar',
+    confirmCancel:'Cancelar',
     noDataLabel:'Sem dados',
     exportBtn:'📤 Exportar', importBtn:'📥 Importar',
     startAudioFirst:'Inicie o áudio primeiro',
@@ -1829,6 +1879,11 @@ class ChartRenderer {
     this._dpr = window.devicePixelRatio || 1;
     this.resize();
     window.addEventListener('resize', () => this.resize());
+    // 监听单/双栏布局断点，确保切换时 canvas 正确缩放
+    const mq = window.matchMedia('(max-width: 900px)');
+    mq.addEventListener('change', () => {
+      requestAnimationFrame(() => this.resize());
+    });
   }
 
   resize() {
@@ -1993,9 +2048,9 @@ class ChartRenderer {
       }
     }
 
-    // === Draw phase curve (深灰，右轴 -180~180) ===
+    // === Draw phase curve (深灰，右轴 -360~360) ===
     if (rawPhase) {
-      const pMin = -180, pMax = 180;
+      const pMin = -360, pMax = 360;
       const yScaleP = (deg) => margin.top + plotH - ((deg - pMin) / (pMax - pMin)) * plotH;
       ctx.beginPath();
       let started = false;
@@ -2124,7 +2179,7 @@ class ChartRenderer {
     ctx.fillStyle = '#6e7681';
     ctx.font = '9px -apple-system, sans-serif';
     const numYP = 6;
-    const pMin = -180, pMax = 180;
+    const pMin = -360, pMax = 360;
     for (let i = 0; i <= numYP; i++) {
       const deg = pMin + (pMax - pMin) * i / numYP;
       const y = margin.top + plotH - (i / numYP) * plotH;
@@ -2204,6 +2259,7 @@ const $levelLabel = document.getElementById('levelLabel');
 
 // ---- 输入电平表 (requestAnimationFrame 驱动) ----
 let _meterRaf = null;
+let _noiseLevelTimer = null;
 function updateLevelMeter() {
   _meterRaf = requestAnimationFrame(updateLevelMeter);
   const analyser = audio.micAnalyser;
@@ -2243,6 +2299,32 @@ function stopLevelMeter() {
   $meterFill.style.width = '0%';
   $levelDB.textContent = '—∞ dB';
   $levelLabel.textContent = '—';
+}
+
+/** 白噪声播放时每秒读取输入电平，更新目标增益 */
+function startNoiseLevelMonitor() {
+  stopNoiseLevelMonitor();
+  const $target = document.getElementById('autoPeqTarget');
+  _noiseLevelTimer = setInterval(() => {
+    const analyser = audio.micAnalyser;
+    if (!analyser) return;
+    const buf = new Float32Array(analyser.fftSize);
+    analyser.getFloatTimeDomainData(buf);
+    let sumSq = 0;
+    for (let i = 0; i < buf.length; i++) sumSq += buf[i] * buf[i];
+    const rms = Math.sqrt(sumSq / buf.length);
+    // dBFS (RMS), 参考 1.0 = 0 dB
+    const dB = rms > 1e-9 ? 20 * Math.log10(rms) : -100;
+    // 钳位到 -60 ~ 0 范围，保留一位小数
+    const clamped = Math.max(-60, Math.min(0, dB));
+    $target.value = Math.round(clamped * 10) / 10;
+  }, 1000);
+}
+function stopNoiseLevelMonitor() {
+  if (_noiseLevelTimer) {
+    clearInterval(_noiseLevelTimer);
+    _noiseLevelTimer = null;
+  }
 }
 
 // ---- 可拖动分隔条 ----
@@ -2386,6 +2468,41 @@ function lockDevices(locked) {
   }
 }
 
+/** 弹出确认对话框，返回 Promise<boolean> */
+function showConfirmDialog(message) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <p>${message}</p>
+        <div class="confirm-actions">
+          <button class="btn btn-secondary btn-sm confirm-cancel-btn">${tr('confirmCancel')}</button>
+          <button class="btn btn-primary btn-sm confirm-ok-btn">${tr('confirmOk')}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const okBtn = overlay.querySelector('.confirm-ok-btn');
+    const cancelBtn = overlay.querySelector('.confirm-cancel-btn');
+
+    const close = (result) => {
+      overlay.remove();
+      resolve(result);
+    };
+
+    okBtn.addEventListener('click', () => close(true));
+    cancelBtn.addEventListener('click', () => close(false));
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close(false);
+    });
+    // ESC 键关闭
+    const onKey = (e) => { if (e.key === 'Escape') { close(false); document.removeEventListener('keydown', onKey); } };
+    document.addEventListener('keydown', onKey);
+  });
+}
+
 // ---- Event Listeners ----
 function setupEventListeners() {
   // Volume & Gain
@@ -2409,6 +2526,7 @@ function setupEventListeners() {
     if (audio.ctx.state === 'suspended') await audio.ctx.resume();
     audio.startNoise(parseFloat($outVolume.value));
     startLevelMeter();
+    startNoiseLevelMonitor();
     lockDevices(true);
     $playNoise.disabled = true;
     $stopNoise.disabled = false;
@@ -2417,6 +2535,7 @@ function setupEventListeners() {
   $stopNoise.addEventListener('click', () => {
     audio.stopNoise();
     stopLevelMeter();
+    stopNoiseLevelMonitor();
     lockDevices(false);
     $playNoise.disabled = false;
     $stopNoise.disabled = true;
@@ -2433,6 +2552,7 @@ function setupEventListeners() {
     // 停止白噪声（如有）
     audio.stopNoise();
     stopLevelMeter();
+    stopNoiseLevelMonitor();
     $playNoise.disabled = true;        // 互斥
     $stopNoise.disabled = true;
 
@@ -2553,10 +2673,15 @@ function setupEventListeners() {
   });
 
   // 自动 PEQ
-  document.getElementById('autoPeqBtn').addEventListener('click', () => {
+  document.getElementById('autoPeqBtn').addEventListener('click', async () => {
     if (!freqData || freqData.length < 5) {
       setStatus('error', tr('error'), tr('noSweepData'));
       return;
+    }
+    // 已有 PEQ 配置时弹出确认对话框
+    if (peqMgr && peqMgr.list.length > 0) {
+      const confirmed = await showConfirmDialog(tr('confirmClearPeq'));
+      if (!confirmed) return;
     }
     const count = parseInt(document.getElementById('autoPeqCount').value) || 5;
     const fLow = parseFloat(document.getElementById('autoPeqFreqLow').value) || 50;
@@ -2717,16 +2842,17 @@ function exportRew() {
     return;
   }
   const targetSpl = parseFloat(document.getElementById('targetSplInput').value) || 76;
+  const targetGain = parseFloat(document.getElementById('autoPeqTarget').value) || 0;
   const now = new Date();
   const dateStr = now.toISOString().replace('T', ' ').substring(0, 19);
   const lines = [];
   lines.push(`* Exported from Acoustic Measurement Tool at ${dateStr}`);
-  lines.push(`* Source: measurement data, target SPL ${targetSpl.toFixed(1)} dB`);
+  lines.push(`* Source: measurement data, target SPL ${targetSpl.toFixed(1)} dB, target gain ${targetGain.toFixed(1)} dB`);
   lines.push('*');
   lines.push('* Freq(Hz)\tSPL(dB)\tPhase(degrees)');
   for (const d of freqData) {
     const f = d.freq.toFixed(6);
-    const spl = (d.dB_norm + targetSpl).toFixed(4);
+    const spl = (d.dB_norm - targetGain + targetSpl).toFixed(4);
     const phase = d.phase != null ? d.phase.toFixed(4) : '0.0000';
     lines.push(`${f}\t${spl}\t${phase}`);
   }
