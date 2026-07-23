@@ -361,21 +361,20 @@ input[type="range"]::-moz-range-thumb {
     <div class="panel-row" style="flex-direction:column;align-items:stretch;gap:2px">
       <label>输入声道</label>
       <select id="inChannel" style="width:100%">
-        <option value="0">左 L</option>
-        <option value="1">右 R</option>
-        <option value="dual" selected>立体声</option>
+        <option value="0">L</option>
+        <option value="1">R</option>
       </select>
     </div>
-    <div class="panel-row" style="flex-direction:column;align-items:stretch;gap:2px">
+    <div class="panel-row" id="outDeviceRow" style="flex-direction:column;align-items:stretch;gap:2px">
       <label>输出</label>
       <select id="outDevice" class="grow"></select>
     </div>
     <div class="panel-row" style="flex-direction:column;align-items:stretch;gap:2px">
       <label>输出声道</label>
       <select id="outChannel" style="width:100%">
-        <option value="0">左 L</option>
-        <option value="1">右 R</option>
-        <option value="dual" selected>立体声</option>
+        <option value="all">全部</option>
+        <option value="0">L</option>
+        <option value="1">R</option>
       </select>
     </div>
     <div class="panel-row">
@@ -409,14 +408,10 @@ input[type="range"]::-moz-range-thumb {
       <button id="stopNoiseBtn" class="btn btn-secondary btn-sm" disabled>■ 停止</button>
     </div>
     <div class="panel-row" style="flex-direction:column;align-items:stretch;gap:2px">
-      <label>输出音量</label>
-      <div style="display:flex;gap:10px;align-items:center">
-        <input type="range" id="outVolume" min="-60" max="0" value="-12" step="1" style="flex:1">
-        <span id="outVolumeVal" class="range-value">-12</span>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <label>输入增益</label>
+        <button id="autoLevelBtn" class="btn btn-accent btn-sm" disabled>自动调整</button>
       </div>
-    </div>
-    <div class="panel-row" style="flex-direction:column;align-items:stretch;gap:2px">
-      <label>输入增益</label>
       <div style="display:flex;gap:10px;align-items:center">
         <input type="range" id="inGain" min="-12" max="36" value="0" step="1" style="flex:1">
         <span id="inGainVal" class="range-value">0</span>
@@ -441,9 +436,9 @@ input[type="range"]::-moz-range-thumb {
     </div>
     <div class="panel-row">
       <label>点数</label>
-      <input type="number" id="sweepPoints" value="50" min="5" max="500" style="width:56px">
+      <input type="number" id="sweepPoints" value="100" min="5" max="500" style="width:56px">
       <label>时长</label>
-      <input type="number" id="pointDuration" value="150" min="20" max="1000" style="width:56px">
+      <input type="number" id="pointDuration" value="100" min="20" max="1000" style="width:56px">
       <span style="font-size:11px;color:#8b949e;margin-left:-4px">ms</span>
     </div>
     <div class="panel-row">
@@ -492,29 +487,24 @@ input[type="range"]::-moz-range-thumb {
       <span style="font-size:12px;color:#8b949e;white-space:nowrap" data-i18n="autoPeqLabel">自动 PEQ</span>
       <span style="display:inline-flex;align-items:center;gap:4px">
         <label style="font-size:11px" data-i18n="autoPeqCount">数量</label>
-        <input type="number" id="autoPeqCount" value="5" min="1" max="20" style="width:44px">
+        <input type="number" id="autoPeqCount" value="10" min="1" max="20" style="width:44px">
       </span>
       <span style="display:inline-flex;align-items:center;gap:4px">
-        <label style="font-size:11px" data-i18n="autoPeqFlat">平直响应范围</label>
+        <label style="font-size:11px" data-i18n="autoPeqFlat">调整响应范围</label>
         <input type="number" id="autoPeqFreqLow" value="50" min="10" max="20000" style="width:48px">
         <span style="font-size:10px;color:#8b949e">~</span>
         <input type="number" id="autoPeqFreqHigh" value="16000" min="20" max="24000" style="width:60px">
         <span style="font-size:10px;color:#8b949e">Hz</span>
       </span>
       <span style="display:inline-flex;align-items:center;gap:4px">
-        <label style="font-size:11px" data-i18n="autoPeqTarget">目标增益</label>
-        <input type="number" id="autoPeqTarget" value="0" min="-40" max="0" step="0.5" style="width:50px">
+        <label style="font-size:11px" data-i18n="autoPeqTilt">低频增益</label>
+        <input type="number" id="autoPeqTilt" value="0" min="-24" max="24" step="0.5" style="width:50px">
         <span style="font-size:10px;color:#8b949e">dB</span>
       </span>
       <span style="display:inline-flex;align-items:center;gap:4px">
         <label style="font-size:11px" data-i18n="autoPeqGain">PEQ 增益</label>
-        <input type="number" id="autoPeqMaxGain" value="20" min="1" max="40" style="width:42px">
+        <input type="number" id="autoPeqMaxGain" value="12" min="1" max="40" style="width:42px">
         <span style="font-size:10px;color:#8b949e">±dB</span>
-      </span>
-      <span style="display:inline-flex;align-items:center;gap:4px">
-        <label style="font-size:11px" data-i18n="autoPeqTolerance">容差</label>
-        <input type="number" id="autoPeqTolerance" value="3" min="0.5" max="20" step="0.5" style="width:42px">
-        <span style="font-size:10px;color:#8b949e">dB</span>
       </span>
       <button id="autoPeqBtn" class="btn btn-primary btn-sm" style="margin-left:auto" data-i18n="autoPeqBtn">▶ 生成</button>
     </div>
@@ -529,7 +519,10 @@ input[type="range"]::-moz-range-thumb {
       <button id="importBtn" class="btn btn-secondary btn-sm">📥 导入数据</button>
       <input type="file" id="importFile" accept=".json" style="display:none">
       <label style="font-size:11px;margin-left:8px" data-i18n="targetSpl">目标 SPL</label>
-      <input type="number" id="targetSplInput" value="76" min="40" max="120" step="0.5" style="width:50px">
+      <input type="number" id="targetSplInput" value="75" min="40" max="120" step="0.5" style="width:50px">
+      <span style="font-size:10px;color:#8b949e">dB</span>
+      <label style="font-size:11px;margin-left:8px" data-i18n="autoPeqTarget">目标增益</label>
+      <input type="number" id="autoPeqTarget" value="0" min="-40" max="0" step="0.5" style="width:50px">
       <span style="font-size:10px;color:#8b949e">dB</span>
       <button id="exportRewBtn" class="btn btn-secondary btn-sm" data-i18n="exportRew">📤 REW</button>
       <span style="font-size:12px;color:#8b949e" id="dataInfo">无测量数据</span>
@@ -550,11 +543,10 @@ const LOCALE_NAMES = { zh:'中文', en:'English', fr:'Français', es:'Español',
 const STR = {
   zh: {
     appTitle:'🎧 声学测量工具', device:'设备', input:'输入设备',
-    output:'输出设备', inputCh:'输入声道', outputCh:'输出声道', chLeft:'左', chRight:'右',
-    chDual:'立体声', refresh:'🔄 刷新设备', standby:'待机', micReady:'麦克风已就绪',
+    output:'输出设备', inputCh:'输入声道', outputCh:'输出声道', all:'全部', refresh:'🔄 刷新设备', standby:'待机', micReady:'麦克风已就绪',
     micErr:'麦克风错误', micFail:'麦克风启动失败',
     level:'输入电平', adjust:'调整', noise:'▶ 白噪声',
-    stop:'■ 停止', outVol:'输出音量', inGain:'输入增益',
+    stop:'■ 停止', inGain:'输入增益', autoLevel:'自动调整',
     sweep:'测试', startSweep:'▶ 开始扫频', stopSweep:'■ 停止',
     from:'起始', to:'终止', points:'点数', dur:'时长', ms:'ms',
     filter:'带通滤波',
@@ -563,6 +555,8 @@ const STR = {
     done:'完成', doneFmt:(n,lo,hi)=>`${n} 个频率点 · 范围 ${lo}–${hi} Hz`,
     error:'错误', stopped:'已停止', aborted:'测量被中止',
     failed:'失败', noData:'测量数据不足，请检查输入/输出设备和音量', noSweepData:'数据不足，请先执行扫频测量',
+    peqGenFailed:'未能生成 PEQ 参数', peqGenDone:(n)=>`自动 PEQ: ${n} 个`,
+    selectMicFirst:'请先选择输入设备并启动麦克风',
     dataInfo:(n,lo,hi,t)=>`数据: ${n} 点 · ${lo}–${hi} Hz · ${t}`,
     importOk:(n)=>`导入: ${n} 点`, importFail:'导入失败',
     noDataExport:'没有测量数据可以导出', invalidFile:'无效的数据文件',
@@ -574,9 +568,9 @@ const STR = {
     autoPeqLabel:'自动 PEQ',
     autoPeqCount:'数量',
     autoPeqTarget:'目标增益',
-    autoPeqFlat:'平直响应范围',
+    autoPeqTilt:'低频增益',
+    autoPeqFlat:'调整响应范围',
     autoPeqGain:'PEQ 增益',
-    autoPeqTolerance:'容差',
     autoPeqBtn:'▶ 生成',
         targetSpl:'目标 SPL',
     confirmClearPeq:'自动计算 PEQ 将清除当前所有 PEQ 配置，是否继续？',
@@ -589,18 +583,16 @@ const STR = {
     outDevFail:'输出设备切换失败',
     defaultDev:'系统默认 (Default)',
     micLabel:(i)=>`麦克风 ${i}`, speakerLabel:(i)=>`扬声器 ${i}`,
-    supportsOutTitle:'当前浏览器不支持切换输出设备（仅 Chrome 可用）',
     hz:'Hz', db:'dB',
     axisLeft:'频响 dB', axisRight:'PEQ dB',
     placeholder1:'执行扫频测量以获取频率响应', placeholder2:'点击左侧「开始扫频」按钮',
   },
   en: {
     appTitle:'🎧 Acoustic Measurement', device:'Device', input:'Input Device',
-    output:'Output Device', inputCh:'Input Ch', outputCh:'Output Ch', chLeft:'Left', chRight:'Right',
-    chDual:'Stereo', refresh:'🔄 Refresh', standby:'Standby', micReady:'Microphone ready',
+    output:'Output Device', inputCh:'Input Ch', outputCh:'Output Ch', all:'All', refresh:'🔄 Refresh', standby:'Standby', micReady:'Microphone ready',
     micErr:'Mic error', micFail:'Microphone failed',
     level:'Input Level', adjust:'Adjust', noise:'▶ White Noise',
-    stop:'■ Stop', outVol:'Output Vol', inGain:'Input Gain',
+    stop:'■ Stop', inGain:'Input Gain', autoLevel:'Auto',
     sweep:'Sweep', startSweep:'▶ Start Sweep', stopSweep:'■ Stop',
     from:'From', to:'To', points:'Points', dur:'Duration', ms:'ms',
     filter:'Bandpass',
@@ -609,6 +601,8 @@ const STR = {
     done:'Done', doneFmt:(n,lo,hi)=>`${n} points · ${lo}–${hi} Hz`,
     error:'Error', stopped:'Stopped', aborted:'Measurement aborted',
     failed:'Failed', noData:'Insufficient data — check I/O devices and volume', noSweepData:'Insufficient data — run a sweep first',
+    peqGenFailed:'Failed to generate PEQ', peqGenDone:(n)=>`Auto EQ: ${n} filters`,
+    selectMicFirst:'Select input device and start microphone first',
     dataInfo:(n,lo,hi,t)=>`Data: ${n} pts · ${lo}–${hi} Hz · ${t}`,
     importOk:(n)=>`Imported: ${n} pts`, importFail:'Import failed',
     noDataExport:'No measurement data to export', invalidFile:'Invalid data file',
@@ -620,9 +614,9 @@ const STR = {
     autoPeqLabel:'Auto EQ',
     autoPeqCount:'Count',
     autoPeqTarget:'Target',
-    autoPeqFlat:'Flat',
+    autoPeqTilt:'LF Tilt',
+    autoPeqFlat:'Range',
     autoPeqGain:'Gain',
-    autoPeqTolerance:'Tolerance',
     autoPeqBtn:'▶ Generate',
         targetSpl:'Target SPL',
     confirmClearPeq:'Auto-calculate PEQ will clear all current PEQ settings. Continue?',
@@ -635,19 +629,17 @@ const STR = {
     outDevFail:'Output device switch failed',
     defaultDev:'System Default',
     micLabel:(i)=>`Mic ${i}`, speakerLabel:(i)=>`Speaker ${i}`,
-    supportsOutTitle:'Output device switching unsupported (Chrome only)',
     hz:'Hz', db:'dB',
     axisLeft:'Resp. dB', axisRight:'PEQ dB',
     placeholder1:'Run a sweep to measure frequency response', placeholder2:'Click "Start Sweep" on the left',
   },
   fr: {
     appTitle:'🎧 Mesure Acoustique', device:'Périphérique', input:'Périphérique d\'entrée',
-    output:'Périphérique de sortie', inputCh:'Canal Entrée', outputCh:'Canal Sortie',
-    chLeft:'Gauche', chRight:'Droit', chDual:'Stéréo',
+    output:'Périphérique de sortie', inputCh:'Canal Entrée', outputCh:'Canal Sortie', all:'Tous',
     refresh:'🔄 Actualiser', standby:'Veille', micReady:'Micro prêt',
     micErr:'Erreur micro', micFail:'Échec micro',
     level:'Niveau Entrée', adjust:'Ajuster', noise:'▶ Bruit Blanc',
-    stop:'■ Stop', outVol:'Vol. Sortie', inGain:'Gain Entrée',
+    stop:'■ Stop', inGain:'Gain Entrée', autoLevel:'Auto',
     sweep:'Balayage', startSweep:'▶ Démarrer', stopSweep:'■ Stop',
     from:'Début', to:'Fin', points:'Points', dur:'Durée', ms:'ms',
     filter:'Passe-bande',
@@ -666,9 +658,9 @@ const STR = {
     autoPeqLabel:'EQ Auto',
     autoPeqCount:'Nb',
     autoPeqTarget:'Cible',
-    autoPeqFlat:'Plage',
+    autoPeqTilt:'Inclin. BF',
+    autoPeqFlat:'Fr Range',
     autoPeqGain:'Gain',
-    autoPeqTolerance:'Tolérance',
     autoPeqBtn:'▶ Générer',
         targetSpl:'SPL cible',
     confirmClearPeq:'Le calcul automatique du PEQ effacera tous les réglages PEQ actuels. Continuer\u00a0?',
@@ -681,7 +673,6 @@ const STR = {
     outDevFail:'Échec changement sortie',
     defaultDev:'Défaut Système',
     micLabel:(i)=>`Micro ${i}`, speakerLabel:(i)=>`HP ${i}`,
-    supportsOutTitle:'Non supporté (Chrome uniquement)',
     hz:'Hz', db:'dB',
     axisLeft:'Réponse dB', axisRight:'PEQ dB',
     placeholder1:'Effectuez un balayage pour mesurer la réponse en fréquence',
@@ -689,16 +680,15 @@ const STR = {
   },
   es: {
     appTitle:'🎧 Medición Acústica', device:'Dispositivo', input:'Dispositivo de entrada',
-    output:'Dispositivo de salida', inputCh:'Canal Entrada', outputCh:'Canal Salida',
-    chLeft:'Izquierdo', chRight:'Derecho', chDual:'Estéreo',
+    output:'Dispositivo de salida', inputCh:'Canal Entrada', outputCh:'Canal Salida', all:'Todos',
     refresh:'🔄 Refrescar', standby:'Espera', micReady:'Micrófono listo',
     micErr:'Error mic.', micFail:'Fallo micrófono',
     level:'Nivel Entrada', adjust:'Ajustar', noise:'▶ Ruido Blanco',
-    stop:'■ Parar', outVol:'Vol. Salida', inGain:'Gan. Entrada',
+    stop:'■ Parar', inGain:'Gan. Entrada', autoLevel:'Auto',
     sweep:'Barrido', startSweep:'▶ Iniciar', stopSweep:'■ Parar',
     from:'Inicio', to:'Fin', points:'Puntos', dur:'Duración', ms:'ms',
     filter:'Paso-banda',
-    ready:'Listo', waiting:'Esperando', preparing:'Preparando…', processing:'Processando…', processing:'Procesando…',
+    ready:'Listo', waiting:'Esperando', preparing:'Preparando…', processing:'Procesando…',
     measuring:'Midiendo', pointFmt:(c,t,f)=>`Punto ${c}/${t}  ${f.toFixed(0)} Hz`,
     done:'Completado', doneFmt:(n,lo,hi)=>`${n} puntos · ${lo}–${hi} Hz`,
     error:'Error', stopped:'Detenido', aborted:'Medición cancelada',
@@ -713,9 +703,9 @@ const STR = {
     autoPeqLabel:'EQ Auto',
     autoPeqCount:'Cant.',
     autoPeqTarget:'Objetivo',
-    autoPeqFlat:'Plano',
+    autoPeqTilt:'Inclin. BF',
+    autoPeqFlat:'Rango',
     autoPeqGain:'Ganancia',
-    autoPeqTolerance:'Tolerancia',
     autoPeqBtn:'▶ Generar',
         targetSpl:'SPL objetivo',
     confirmClearPeq:'El cálculo automático de PEQ borrará todos los ajustes actuales. ¿Continuar?',
@@ -729,7 +719,6 @@ const STR = {
     outDevFail:'Fallo cambio salida',
     defaultDev:'Defecto Sistema',
     micLabel:(i)=>`Mic ${i}`, speakerLabel:(i)=>`Altavoz ${i}`,
-    supportsOutTitle:'No soportado (solo Chrome)',
     hz:'Hz', db:'dB',
     axisLeft:'Resp. dB', axisRight:'PEQ dB',
     placeholder1:'Realice un barrido para medir la respuesta de frecuencia',
@@ -737,12 +726,11 @@ const STR = {
   },
   ru: {
     appTitle:'🎧 Акустические Измерения', device:'Устройство', input:'Устройство входа',
-    output:'Устройство выхода', inputCh:'Канал входа', outputCh:'Канал выхода',
-    chLeft:'Левый', chRight:'Правый', chDual:'Стерео',
+    output:'Устройство выхода', inputCh:'Канал входа', outputCh:'Канал выхода', all:'Все',
     refresh:'🔄 Обновить', standby:'Ожидание', micReady:'Микрофон готов',
     micErr:'Ошибка микрофона', micFail:'Не удалось запустить микрофон',
     level:'Уровень входа', adjust:'Настройка', noise:'▶ Белый шум',
-    stop:'■ Стоп', outVol:'Громкость', inGain:'Усиление входа',
+    stop:'■ Стоп', inGain:'Усиление входа', autoLevel:'Авто',
     sweep:'Свип', startSweep:'▶ Старт', stopSweep:'■ Стоп',
     from:'От', to:'До', points:'Точки', dur:'Длит.', ms:'мс',
     filter:'Полосовой',
@@ -761,9 +749,9 @@ const STR = {
     autoPeqLabel:'Авто ЭК',
     autoPeqCount:'Кол-во',
     autoPeqTarget:'Цель',
+    autoPeqTilt:'НЧ наклон',
     autoPeqFlat:'Диапазон',
     autoPeqGain:'Усиление',
-    autoPeqTolerance:'Допуск',
     autoPeqBtn:'▶ Создать',
         targetSpl:'Целевой SPL',
     confirmClearPeq:'Автоматический расчет PEQ удалит все текущие настройки PEQ. Продолжить?',
@@ -776,7 +764,6 @@ const STR = {
     outDevFail:'Ошибка переключения',
     defaultDev:'Системный',
     micLabel:(i)=>`Мик ${i}`, speakerLabel:(i)=>`Дин ${i}`,
-    supportsOutTitle:'Не поддерживается (только Chrome)',
     hz:'Гц', db:'дБ',
     axisLeft:'Отклик дБ', axisRight:'PEQ дБ',
     placeholder1:'Выполните свип-измерение для получения АЧХ',
@@ -784,12 +771,11 @@ const STR = {
   },
   de: {
     appTitle:'🎧 Akustische Messung', device:'Gerät', input:'Eingangsgerät',
-    output:'Ausgangsgerät', inputCh:'Eingangskanal', outputCh:'Ausgangskanal',
-    chLeft:'Links', chRight:'Rechts', chDual:'Stereo',
+    output:'Ausgangsgerät', inputCh:'Eingangskanal', outputCh:'Ausgangskanal', all:'Alle',
     refresh:'🔄 Aktualisieren', standby:'Bereit', micReady:'Mikrofon bereit',
     micErr:'Mikrofonfehler', micFail:'Mikrofonfehler',
     level:'Eingangspegel', adjust:'Einstellen', noise:'▶ Weißes Rauschen',
-    stop:'■ Stop', outVol:'Ausgabelautst.', inGain:'Eingangsverst.',
+    stop:'■ Stop', inGain:'Eingangsverst.', autoLevel:'Auto',
     sweep:'Sweep', startSweep:'▶ Start', stopSweep:'■ Stop',
     from:'Von', to:'Bis', points:'Punkte', dur:'Dauer', ms:'ms',
     filter:'Bandpass',
@@ -808,9 +794,9 @@ const STR = {
     autoPeqLabel:'Auto EQ',
     autoPeqCount:'Anzahl',
     autoPeqTarget:'Ziel',
+    autoPeqTilt:'LF-Neigung',
     autoPeqFlat:'Bereich',
     autoPeqGain:'Verstärk.',
-    autoPeqTolerance:'Toleranz',
     autoPeqBtn:'▶ Erzeugen',
         targetSpl:'Ziel-SPL',
     confirmClearPeq:'Die automatische PEQ-Berechnung löscht alle aktuellen PEQ-Einstellungen. Fortfahren?',
@@ -823,7 +809,6 @@ const STR = {
     outDevFail:'Ausgangswechsel fehlgeschlagen',
     defaultDev:'Standard',
     micLabel:(i)=>`Mik ${i}`, speakerLabel:(i)=>`Laut ${i}`,
-    supportsOutTitle:'Nicht unterstützt (nur Chrome)',
     hz:'Hz', db:'dB',
     axisLeft:'Antwort dB', axisRight:'PEQ dB',
     placeholder1:'Führen Sie einen Sweep durch, um den Frequenzgang zu messen',
@@ -831,12 +816,11 @@ const STR = {
   },
   ja: {
     appTitle:'🎧 音響測定', device:'デバイス', input:'入力デバイス',
-    output:'出力デバイス', inputCh:'入力チャンネル', outputCh:'出力チャンネル',
-    chLeft:'左', chRight:'右', chDual:'ステレオ',
+    output:'出力デバイス', inputCh:'入力チャンネル', outputCh:'出力チャンネル', all:'すべて',
     refresh:'🔄 更新', standby:'待機', micReady:'マイク準備完了',
     micErr:'マイクエラー', micFail:'マイク起動失敗',
     level:'入力レベル', adjust:'調整', noise:'▶ ホワイトノイズ',
-    stop:'■ 停止', outVol:'出力音量', inGain:'入力ゲイン',
+    stop:'■ 停止', inGain:'入力ゲイン', autoLevel:'自動',
     sweep:'スイープ', startSweep:'▶ 開始', stopSweep:'■ 停止',
     from:'開始', to:'終了', points:'点数', dur:'時間', ms:'ms',
     filter:'帯域通過',
@@ -855,9 +839,9 @@ const STR = {
     autoPeqLabel:'自動EQ',
     autoPeqCount:'数',
     autoPeqTarget:'目標',
-    autoPeqFlat:'フラット',
+    autoPeqTilt:'低域傾斜',
+    autoPeqFlat:'範囲',
     autoPeqGain:'ゲイン',
-    autoPeqTolerance:'許容差',
     autoPeqBtn:'▶ 生成',
         targetSpl:'目標 SPL',
     confirmClearPeq:'自動PEQ計算を実行すると、現在のPEQ設定がすべて消去されます。続行しますか？',
@@ -870,7 +854,6 @@ const STR = {
     outDevFail:'出力デバイス切替失敗',
     defaultDev:'システムデフォルト',
     micLabel:(i)=>`マイク ${i}`, speakerLabel:(i)=>`スピーカー ${i}`,
-    supportsOutTitle:'非対応（Chromeのみ）',
     hz:'Hz', db:'dB',
     axisLeft:'応答 dB', axisRight:'PEQ dB',
     placeholder1:'スイープ測定を実行して周波数特性を取得',
@@ -878,12 +861,11 @@ const STR = {
   },
   ko: {
     appTitle:'🎧 음향 측정', device:'장치', input:'입력 장치',
-    output:'출력 장치', inputCh:'입력 채널', outputCh:'출력 채널',
-    chLeft:'좌', chRight:'우', chDual:'스테레오',
+    output:'출력 장치', inputCh:'입력 채널', outputCh:'출력 채널', all:'모두',
     refresh:'🔄 새로고침', standby:'대기', micReady:'마이크 준비 완료',
     micErr:'마이크 오류', micFail:'마이크 시작 실패',
     level:'입력 레벨', adjust:'조정', noise:'▶ 백색 잡음',
-    stop:'■ 정지', outVol:'출력 볼륨', inGain:'입력 게인',
+    stop:'■ 정지', inGain:'입력 게인', autoLevel:'자동',
     sweep:'스위프', startSweep:'▶ 시작', stopSweep:'■ 정지',
     from:'시작', to:'종료', points:'포인트', dur:'시간', ms:'ms',
     filter:'대역 통과',
@@ -902,9 +884,9 @@ const STR = {
     autoPeqLabel:'자동 EQ',
     autoPeqCount:'개수',
     autoPeqTarget:'목표',
-    autoPeqFlat:'평탄',
+    autoPeqTilt:'저역 기울기',
+    autoPeqFlat:'범위',
     autoPeqGain:'게인',
-    autoPeqTolerance:'공차',
     autoPeqBtn:'▶ 생성',
         targetSpl:'목표 SPL',
     confirmClearPeq:'자동 PEQ 계산을 실행하면 현재 PEQ 설정이 모두 지워집니다. 계속하시겠습니까?',
@@ -917,7 +899,6 @@ const STR = {
     outDevFail:'출력 장치 전환 실패',
     defaultDev:'시스템 기본값',
     micLabel:(i)=>`마이크 ${i}`, speakerLabel:(i)=>`스피커 ${i}`,
-    supportsOutTitle:'지원되지 않음 (Chrome만 가능)',
     hz:'Hz', db:'dB',
     axisLeft:'응답 dB', axisRight:'PEQ dB',
     placeholder1:'스위프 측정을 실행하여 주파수 응답을 얻으세요',
@@ -925,16 +906,15 @@ const STR = {
   },
   pt: {
     appTitle:'🎧 Medição Acústica', device:'Dispositivo', input:'Dispositivo de entrada',
-    output:'Dispositivo de saída', inputCh:'Canal Entrada', outputCh:'Canal Saída',
-    chLeft:'Esquerdo', chRight:'Direito', chDual:'Estéreo',
+    output:'Dispositivo de saída', inputCh:'Canal Entrada', outputCh:'Canal Saída', all:'Todos',
     refresh:'🔄 Atualizar', standby:'Espera', micReady:'Microfone pronto',
     micErr:'Erro microfone', micFail:'Falha no microfone',
     level:'Nível Entrada', adjust:'Ajustar', noise:'▶ Ruído Branco',
-    stop:'■ Parar', outVol:'Vol. Saída', inGain:'Ganho Entrada',
+    stop:'■ Parar', inGain:'Ganho Entrada', autoLevel:'Auto',
     sweep:'Varredura', startSweep:'▶ Iniciar', stopSweep:'■ Parar',
     from:'Início', to:'Fim', points:'Pontos', dur:'Duração', ms:'ms',
     filter:'Passa-banda',
-    ready:'Pronto', waiting:'Aguardando', preparing:'Preparando…',
+    ready:'Pronto', waiting:'Aguardando', preparing:'Preparando…', processing:'Processando…',
     measuring:'Medindo', pointFmt:(c,t,f)=>`Ponto ${c}/${t}  ${f.toFixed(0)} Hz`,
     done:'Concluído', doneFmt:(n,lo,hi)=>`${n} pontos · ${lo}–${hi} Hz`,
     error:'Erro', stopped:'Parado', aborted:'Medição cancelada',
@@ -949,10 +929,11 @@ const STR = {
     autoPeqLabel:'EQ Auto',
     autoPeqCount:'Quant.',
     autoPeqTarget:'Alvo',
-    autoPeqFlat:'Plano',
+    autoPeqTilt:'Inclin. BF',
+    autoPeqFlat:'Faixa',
     autoPeqGain:'Ganho',
-    autoPeqTolerance:'Tolerância',
     autoPeqBtn:'▶ Gerar',
+    exportRew:'📤 REW',
         targetSpl:'SPL alvo',
     confirmClearPeq:'O cálculo automático de PEQ limpará todas as configurações atuais de PEQ. Continuar?',
     confirmOk:'Continuar',
@@ -963,7 +944,6 @@ const STR = {
     outDevFail:'Falha ao trocar saída',
     defaultDev:'Padrão Sistema',
     micLabel:(i)=>`Mic ${i}`, speakerLabel:(i)=>`Alto-falante ${i}`,
-    supportsOutTitle:'Não suportado (apenas Chrome)',
     hz:'Hz', db:'dB',
     axisLeft:'Resp. dB', axisRight:'PEQ dB',
     placeholder1:'Execute uma varredura para medir a resposta de frequência',
@@ -996,16 +976,16 @@ function applyLanguage(lang) {
   safe(() => _('#devicePanel .panel-row:nth-child(4) label').textContent = t.output);
   safe(() => _('#devicePanel .panel-row:nth-child(5) label').textContent = t.outputCh);
 
-  safe(() => { rebuildChannelOptions('inChannel', t); });
-  safe(() => { rebuildChannelOptions('outChannel', t); });
+  safe(() => { rebuildChannelOptions('inChannel', audio._inChannelCount || 2, false); });
+  safe(() => { rebuildChannelOptions('outChannel', audio._outChCount || 2, true); });
   safe(() => { $refreshDevices.textContent = t.refresh; });
   safe(() => { $audioStatus.textContent = t.standby; });
 
   // 调整面板
   safe(() => { $playNoise.textContent = t.noise; });
   safe(() => { $stopNoise.textContent = t.stop; });
-  safe(() => _('#adjustPanel .panel-row:nth-child(3) label').textContent = t.outVol);
-  safe(() => _('#adjustPanel .panel-row:nth-child(4) label').textContent = t.inGain);
+  safe(() => _('#adjustPanel .panel-row:nth-child(3) label').textContent = t.inGain);
+  safe(() => { $autoLevelBtn.textContent = t.autoLevel; });
 
   // 测试面板
   safe(() => { $startSweep.textContent = t.startSweep; });
@@ -1082,13 +1062,13 @@ function applyLanguage(lang) {
     const el = _('[data-i18n="autoPeqGain"]'); if (el) el.textContent = t.autoPeqGain;
   });
   safe(() => {
-    const el = _('[data-i18n="autoPeqTolerance"]'); if (el) el.textContent = t.autoPeqTolerance;
-  });
-  safe(() => {
     const el = _('[data-i18n="autoPeqBtn"]'); if (el) el.textContent = t.autoPeqBtn;
   });
   safe(() => {
     const el = _('[data-i18n="autoPeqTarget"]'); if (el) el.textContent = t.autoPeqTarget;
+  });
+  safe(() => {
+    const el = _('[data-i18n="autoPeqTilt"]'); if (el) el.textContent = t.autoPeqTilt;
   });
 
   // 导入导出
@@ -1114,14 +1094,34 @@ function applyLanguage(lang) {
   safe(() => { chart.draw(); });
 }
 
-function rebuildChannelOptions(selectId, t) {
+/** 根据声道数返回标准扬声器标签 */
+function getChannelLabels(chCount) {
+  const LABELS = {
+    1: ['M'],
+    2: ['L', 'R'],
+    4: ['L', 'R', 'SL', 'SR'],
+    6: ['L', 'R', 'C', 'LFE', 'SL', 'SR'],
+    8: ['L', 'R', 'C', 'LFE', 'SL', 'SR', 'RL', 'RR'],
+  };
+  return LABELS[chCount] || Array.from({ length: chCount }, (_, i) => `${i + 1}`);
+}
+
+/** 重建声道选择下拉框（根据实际声道数动态生成） */
+function rebuildChannelOptions(selectId, chCount, isOutput) {
   const sel = document.getElementById(selectId);
+  if (!sel) return;
   const val = sel.value;
-  sel.innerHTML =
-    `<option value="0">${t.chLeft}</option>` +
-    `<option value="1">${t.chRight}</option>` +
-    `<option value="dual" selected>${t.chDual}</option>`;
-  sel.value = val;
+  const n = chCount || 2;
+  const labels = getChannelLabels(n);
+  let html = '';
+  if (isOutput) {
+    html += `<option value="all" selected>${tr('all')}</option>`;
+  }
+  for (let i = 0; i < n; i++) {
+    html += `<option value="${i}">${labels[i]}</option>`;
+  }
+  sel.innerHTML = html;
+  if (val && (val === 'all' || (parseInt(val) < n))) sel.value = val;
 }
 
 function detectBrowserLang() {
@@ -1129,6 +1129,11 @@ function detectBrowserLang() {
   return LANGUAGES.includes(navLang) ? navLang : 'en';
 }
 
+// ========================================================================
+// ========================================================================
+//  AudioEngine — Web Audio 引擎
+//  职责：创建 AudioContext，管理输入（麦克风）和输出（播放）音频链，
+//  生成白噪声，执行扫频测量，自动调整输入电平
 // ========================================================================
 //  AudioEngine — 管理 Web Audio 上下文、设备、节点
 // ========================================================================
@@ -1152,10 +1157,10 @@ class AudioEngine {
     this._inputBuffers = [];
     this._isRecording = false;
     this._micPanner = null;
-    this.channelSplitter = null;
-    this.channelGainL = null;
-    this.channelGainR = null;
-    this.channelMerger = null;
+    this._inChannelCount = 2;
+    this._outGains = [];
+    this._outMerger = null;
+    this._outChCount = 2;
   }
 
   async init() {
@@ -1165,19 +1170,18 @@ class AudioEngine {
     this.masterGain.gain.value = 1;
     this.masterAnalyser = this.ctx.createAnalyser();
     this.masterAnalyser.fftSize = 1024;
-    // 声道控制：splitter → gainL/gainR → merger
-    this.channelSplitter = this.ctx.createChannelSplitter(2);
-    this.channelGainL = this.ctx.createGain();
-    this.channelGainR = this.ctx.createGain();
-    this.channelMerger = this.ctx.createChannelMerger(2);
-    this.channelGainL.gain.value = 1;
-    this.channelGainR.gain.value = 1;
-    this.masterGain.connect(this.channelSplitter);
-    this.channelSplitter.connect(this.channelGainL, 0, 0);
-    this.channelSplitter.connect(this.channelGainR, 0, 0);
-    this.channelGainL.connect(this.channelMerger, 0, 0);
-    this.channelGainR.connect(this.channelMerger, 0, 1);
-    this.channelMerger.connect(this.masterAnalyser);
+    // 多声道输出路由：masterGain → 每声道独立 Gain → Merger → destination
+    this._outChCount = Math.min(this.ctx.destination.maxChannelCount || 2, 8);
+    this._outGains = [];
+    this._outMerger = this.ctx.createChannelMerger(this._outChCount);
+    for (let i = 0; i < this._outChCount; i++) {
+      const g = this.ctx.createGain();
+      g.gain.value = 1;
+      this._outGains.push(g);
+      this.masterGain.connect(g);
+      g.connect(this._outMerger, 0, i);
+    }
+    this._outMerger.connect(this.masterAnalyser);
     this.masterAnalyser.connect(this.ctx.destination);
     // Default out vol
     this.setOutVolume(-12);
@@ -1188,6 +1192,11 @@ class AudioEngine {
     if (this.micStream) {
       this.stopMic();
     }
+    // 释放 init 阶段预申请的权限流
+    if (window._permStream) {
+      window._permStream.getTracks().forEach(t => t.stop());
+      window._permStream = null;
+    }
     const constraints = {
       audio: {
         deviceId: deviceId ? { exact: deviceId } : undefined,
@@ -1197,6 +1206,14 @@ class AudioEngine {
       }
     };
     this.micStream = await navigator.mediaDevices.getUserMedia(constraints);
+    // 检测输入声道数
+    try {
+      const track = this.micStream.getAudioTracks()[0];
+      const settings = track.getSettings();
+      this._inChannelCount = settings.channelCount || 2;
+    } catch(e) {
+      this._inChannelCount = 2;
+    }
     this.micSource = this.ctx.createMediaStreamSource(this.micStream);
     this.micGain = this.ctx.createGain();
     this.micGain.gain.value = 1; // 0dB
@@ -1236,18 +1253,16 @@ class AudioEngine {
     this.micGain.gain.setValueAtTime(gain, this.ctx.currentTime);
   }
 
-  /** 设置输出声道：'0'=左, '1'=右, 'dual'=立体声 */
+  /** 设置输出声道：'all'=所有声道，'0'/'1'/...=指定声道 */
   setOutputChannel(mode) {
-    if (!this.channelGainL) return;
-    if (mode === '0') {
-      this.channelGainL.gain.value = 1;
-      this.channelGainR.gain.value = 0;
-    } else if (mode === '1') {
-      this.channelGainL.gain.value = 0;
-      this.channelGainR.gain.value = 1;
+    if (!this._outGains || this._outGains.length === 0) return;
+    if (mode === 'all') {
+      for (const g of this._outGains) g.gain.value = 1;
     } else {
-      this.channelGainL.gain.value = 1;
-      this.channelGainR.gain.value = 1;
+      const idx = parseInt(mode);
+      for (let i = 0; i < this._outGains.length; i++) {
+        this._outGains[i].gain.value = (i === idx) ? 1 : 0;
+      }
     }
   }
 
@@ -1269,17 +1284,15 @@ class AudioEngine {
       typeof AudioContext.prototype.setSinkId === 'function';
   }
 
-  // ---- 白噪声 ----
+  // ---- 白噪声（单声道） ----
   startNoise(volumeDB = -12) {
     if (!this.ctx || !this.masterGain) return;
     this.stopNoise();
     const bufferSize = this.ctx.sampleRate * 2;
-    const buffer = this.ctx.createBuffer(2, bufferSize, this.ctx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const data = buffer.getChannelData(ch);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = (Math.random() * 2 - 1);
-      }
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1);
     }
     this._noiseSource = this.ctx.createBufferSource();
     this._noiseSource.buffer = buffer;
@@ -1303,7 +1316,7 @@ class AudioEngine {
   // ---- 扫频测量 ----
   async runSweepMeasure(freqLow, freqHigh, numPoints, pointDurMs, onProgress, onDone, onError, outChan, inChan, useFilter, filterQ) {
     if (!this.ctx || !this.micGain) {
-      onError('请先选择输入设备并启动麦克风');
+      onError(tr('selectMicFirst'));
       return;
     }
     if (this._sweepRunning) return;
@@ -1322,13 +1335,15 @@ class AudioEngine {
 
     const results = [];
 
-    // Setup ScriptProcessorNode for capture
-    const scriptNode = this.ctx.createScriptProcessor(2048, 2, 2);
+    // Setup ScriptProcessorNode for capture（输入声道数取实际值）
+    const inChCount = this._inChannelCount || 2;
+    const scriptNode = this.ctx.createScriptProcessor(2048, inChCount, 1);
     const inputBuffer = [];
     let totalSamplesReceived = 0;
     scriptNode.onaudioprocess = (e) => {
       if (!this._isRecording) return;
-      const chIdx = (inChan === 'dual') ? 0 : parseInt(inChan);
+      const chIdx = parseInt(inChan);
+      if (chIdx >= e.inputBuffer.numberOfChannels) return;
       const data = e.inputBuffer.getChannelData(chIdx);
       inputBuffer.push(new Float32Array(data));
       totalSamplesReceived += data.length;
@@ -1626,249 +1641,599 @@ function updateAutoPeqTarget() {
 }
 
 // ========================================================================
-//  自动 PEQ — 根据频响数据生成最优 PEQ 参数
-//  流程：归一化 → 计算残差 → 平滑 → 极值检测 → 排序筛选 → 局部优化(gain/Q) → 全局微调
+//  自动 PEQ (autoeq-c 算法移植) — 基于梯度优化的多滤波器联合拟合法
+//  流程：预处理(残差/平滑/去均值) → 顺序初始化 → AdaBelief 联合优化
 // ========================================================================
-function generateAutoPEQ(freqData, count, targetDB, freqLow, freqHigh, maxGain, tolerance) {
+// ========================================================================
+// ========================================================================
+//  autoeq-c 核心算法（JavaScript 移植）
+//  原项目：https://github.com/peqdb/autoeq-c
+//  替换原贪心搜索+网格优化联合梯度优化（AdaBelief）
+//  支持任意点数频率网格（自动适配测量数据）
+// ========================================================================
+//  autoeq-c 核心算法 — 辅助函数
+// ========================================================================
+
+const AE = { PK: 0, LSC: 1, HSC: 2 };
+
+function _clip(x, lo, hi) { return Math.min(Math.max(x, lo), hi); }
+function _sq(x) { return x * x; }
+function _exp10(x) { return Math.exp(Math.LN10 * x); }
+function _q2bw(Q) { return 2 / Math.LN2 * Math.asinh(0.5 / Q); }
+function _bw2q(bw) { return 0.5 / Math.sinh(0.5 * Math.LN2 * bw); }
+function _search(arr, v) {
+  let idx = -1, best = 1e9;
+  for (let i = 0; i < arr.length; i++) {
+    const d = Math.abs(arr[i] - v);
+    if (d < best) { best = d; idx = i; }
+  }
+  return idx;
+}
+
+// ---- Biquad 系数计算（含解析梯度） ----
+function _bqPK(A, cos_w, alpha) {
+  const rA = 1 / A;
+  return {
+    b0: A*alpha + 1,       db0_dA: alpha,      db0_dalpha: A,      db0_dcos: 0,
+    b1: -2*cos_w,           db1_dA: 0,                            db1_dcos: -2,
+    b2: -A*alpha + 1,       db2_dA: -alpha,     db2_dalpha: -A,    db2_dcos: 0,
+    a0: (A + alpha)*rA,     da0_dA: -alpha*_sq(rA), da0_dalpha: rA, da0_dcos: 0,
+    a1: -2*cos_w,           da1_dA: 0,                            da1_dcos: -2,
+    a2: (A - alpha)*rA,     da2_dA: alpha*_sq(rA),  da2_dalpha: -rA, da2_dcos: 0,
+  };
+}
+function _bqLSC(A, cos_w, alpha) {
+  const p1 = A + 1, m1 = A - 1, sqrtA = Math.sqrt(A), k = 2*sqrtA*alpha;
+  const dk_dA = alpha / sqrtA, dk_dalpha = 2*sqrtA;
+  return {
+    b0: A*(-cos_w*m1 + k + p1),        db0_dA: A*dk_dA - A*cos_w + A - cos_w*m1 + k + p1,  db0_dalpha: A*dk_dalpha,  db0_dcos: -A*m1,
+    b1: 2*A*(-cos_w*p1 + m1),          db1_dA: -2*A*cos_w + 2*A - 2*cos_w*p1 + 2*m1,                                      db1_dcos: -2*A*p1,
+    b2: A*(-cos_w*m1 - k + p1),        db2_dA: -A*dk_dA - A*cos_w + A - cos_w*m1 - k + p1,  db2_dalpha: -A*dk_dalpha, db2_dcos: -A*m1,
+    a0: cos_w*m1 + k + p1,             da0_dA: dk_dA + cos_w + 1,                            da0_dalpha: dk_dalpha,    da0_dcos: m1,
+    a1: -2*cos_w*p1 - 2*m1,            da1_dA: -2*cos_w - 2,                                                                 da1_dcos: -2*p1,
+    a2: cos_w*m1 - k + p1,             da2_dA: -dk_dA + cos_w + 1,                           da2_dalpha: -dk_dalpha,   da2_dcos: m1,
+  };
+}
+function _bqHSC(A, cos_w, alpha) {
+  const p1 = A + 1, m1 = A - 1, sqrtA = Math.sqrt(A), k = 2*sqrtA*alpha;
+  const dk_dA = alpha / sqrtA, dk_dalpha = 2*sqrtA;
+  return {
+    b0: A*(cos_w*m1 + k + p1),         db0_dA: A*dk_dA + A*cos_w + A + cos_w*m1 + k + p1,  db0_dalpha: A*dk_dalpha,  db0_dcos: A*m1,
+    b1: -2*A*(cos_w*p1 + m1),          db1_dA: -2*A*cos_w - 2*A - 2*cos_w*p1 - 2*m1,                                       db1_dcos: -2*A*p1,
+    b2: A*(cos_w*m1 - k + p1),         db2_dA: -A*dk_dA + A*cos_w + A + cos_w*m1 - k + p1,  db2_dalpha: -A*dk_dalpha, db2_dcos: A*m1,
+    a0: -cos_w*m1 + k + p1,            da0_dA: dk_dA - cos_w + 1,                           da0_dalpha: dk_dalpha,    da0_dcos: -m1,
+    a1: -2*cos_w*p1 + 2*m1,            da1_dA: 2 - 2*cos_w,                                                                  da1_dcos: -2*p1,
+    a2: -cos_w*m1 - k + p1,            da2_dA: -dk_dA - cos_w + 1,                          da2_dalpha: -dk_dalpha,   da2_dcos: -m1,
+  };
+}
+const _BIQUAD_FNS = [_bqPK, _bqLSC, _bqHSC];
+
+// ---- spectrum：计算单个滤波器在指定频率点的频响并累加到 y ----
+function _spectrum(type, f0, gain, Q, fs, freqs, y) {
+  const A = _exp10(gain / 40);
+  const w0 = 2 * Math.PI / fs * f0;
+  const cos_w = Math.cos(w0), sin_w = Math.sin(w0);
+  const alpha = sin_w * 0.5 / Q;
+  const s = _BIQUAD_FNS[type](A, cos_w, alpha);
+  const b_x0 = _sq(s.b0 + s.b1 + s.b2);
+  const b_x1 = -4*(s.b0*s.b1 + 4*s.b0*s.b2 + s.b1*s.b2);
+  const b_x2 = 16*s.b0*s.b2;
+  const a_x0 = _sq(s.a0 + s.a1 + s.a2);
+  const a_x1 = -4*(s.a0*s.a1 + 4*s.a0*s.a2 + s.a1*s.a2);
+  const a_x2 = 16*s.a0*s.a2;
+  for (let k = 0; k < freqs.length; k++) {
+    const phi = _sq(Math.sin(Math.PI / fs * freqs[k]));
+    const b_poly = b_x0 + phi*(b_x1 + phi*b_x2);
+    const a_poly = a_x0 + phi*(a_x1 + phi*a_x2);
+    y[k] += 10 * Math.log10(Math.max(b_poly / a_poly, 1e-12));
+  }
+}
+
+// ---- 峰检测 (scipy-compatible: find_peaks + prominence + width) ----
+function _largestPeak(x, freqs, lim) {
+  const K = freqs.length;
+  const H = Math.floor(K / 2);
+  const peaks = [];
+  for (let i = 1; i < K - 1; i++) {
+    if (freqs[i] < lim.lo || freqs[i] > lim.hi) continue;
+    if (x[i-1] >= x[i]) continue;
+    let i_ahead = i + 1;
+    while (i_ahead < K - 1 && x[i_ahead] === x[i]) i_ahead++;
+    if (x[i_ahead] < x[i]) {
+      peaks.push(Math.floor((i + i_ahead - 1) / 2));
+      i = i_ahead;
+    }
+  }
+  if (peaks.length === 0) return { idx: -1, width: 0, height: 0 };
+
+  const prominences = []; const leftBases = []; const rightBases = [];
+  for (let p = 0; p < peaks.length; p++) {
+    const peak = peaks[p], xPeak = x[peak];
+    leftBases[p] = peak; let leftMin = xPeak;
+    for (let i = peak; i >= 0 && x[i] <= xPeak; i--) {
+      if (x[i] < leftMin) { leftMin = x[i]; leftBases[p] = i; }
+    }
+    rightBases[p] = peak; let rightMin = xPeak;
+    for (let i = peak; i < K && x[i] <= xPeak; i++) {
+      if (x[i] < rightMin) { rightMin = x[i]; rightBases[p] = i; }
+    }
+    prominences[p] = xPeak - Math.max(leftMin, rightMin);
+  }
+
+  let bestSize = 0, best = { idx: -1, width: 0, height: 0 };
+  for (let p = 0; p < peaks.length; p++) {
+    const peak = peaks[p], xPeak = x[peak];
+    const height = xPeak - 0.5*prominences[p];
+    let i = peak; while (leftBases[p] < i && height < x[i]) i--;
+    const leftIP = x[i] < height ? i + (height - x[i]) / (x[i+1] - x[i]) : i;
+    i = peak; while (i < rightBases[p] && height < x[i]) i++;
+    const rightIP = x[i] < height ? i - (height - x[i]) / (x[i-1] - x[i]) : i;
+    const width = rightIP - leftIP, size = width * xPeak;
+    if (size > bestSize) { bestSize = size; best = { idx: peak, width, height: xPeak }; }
+  }
+  return best;
+}
+
+// ---- 初始化函数 ----
+function _initPK(y, freqs, fs, limF0, limGain, limQ) {
+  const K = freqs.length;
+  let rect = y.map(v => Math.max(v, 0));
+  const peak = _largestPeak(rect, freqs, limF0);
+  rect = y.map(v => Math.max(-v, 0));
+  const dip = _largestPeak(rect, freqs, limF0);
+  const p = peak.width*peak.height > dip.width*dip.height ? peak : dip;
+  if (p.idx < 0) return { f0: 1000, gain: 0, Q: 1 };
+  let f0 = freqs[p.idx], gain = p.idx === peak.idx ? peak.height : -dip.height;
+  const bw = p.width * Math.log2(freqs[1] / freqs[0]);
+  const bwExp2 = Math.pow(2, bw);
+  let Q = Math.sqrt(bwExp2) / (bwExp2 - 1);
+  gain = _clip(gain, limGain.lo, limGain.hi);
+  Q = _clip(Q, limQ.lo, limQ.hi);
+  return { f0, gain, Q };
+}
+function _initLSC(y, freqs, fs, limF0, limGain, limQ) {
+  const K = freqs.length;
+  const fl = { lo: Math.max(limF0.lo, 40), hi: Math.min(limF0.hi, 10000) };
+  let best = 0, bestIdx = -1, a = 0;
+  for (let k = 0; k < K; k++) { a += y[k]; const avg = Math.abs(a / (k + 1)); if (avg > best) { best = avg; bestIdx = k; } }
+  if (bestIdx < 0) return { f0: 100, gain: 0, Q: 0.707 };
+  let f0 = freqs[bestIdx], Q = 0.70710678;
+  f0 = _clip(f0, fl.lo, fl.hi); Q = _clip(Q, limQ.lo, limQ.hi);
+  const w = new Float64Array(K).fill(0);
+  _spectrum(AE.LSC, f0, 1, Q, fs, freqs, w);
+  let p = 0, c = 0;
+  for (let k = 0; k < K; k++) { p += w[k]*y[k]; c += Math.abs(w[k]); }
+  let gain = c > 0 ? p / c : 0;
+  gain = _clip(gain, limGain.lo, limGain.hi);
+  return { f0, gain, Q };
+}
+function _initHSC(y, freqs, fs, limF0, limGain, limQ) {
+  const K = freqs.length;
+  const fl = { lo: Math.max(limF0.lo, 40), hi: Math.min(limF0.hi, 10000) };
+  let best = 0, bestIdx = -1, a = 0;
+  for (let k = 0; k < K; k++) { a += y[K-1-k]; const avg = Math.abs(a / (k + 1)); if (avg > best) { best = avg; bestIdx = K-1-k; } }
+  if (bestIdx < 0) return { f0: 10000, gain: 0, Q: 0.707 };
+  let f0 = freqs[bestIdx], Q = 0.70710678;
+  f0 = _clip(f0, fl.lo, fl.hi); Q = _clip(Q, limQ.lo, limQ.hi);
+  const w = new Float64Array(K).fill(0);
+  _spectrum(AE.HSC, f0, 1, Q, fs, freqs, w);
+  let p = 0, c = 0;
+  for (let k = 0; k < K; k++) { p += w[k]*y[k]; c += Math.abs(w[k]); }
+  let gain = c > 0 ? p / c : 0;
+  gain = _clip(gain, limGain.lo, limGain.hi);
+  return { f0, gain, Q };
+}
+const _INIT_FNS = [_initPK, _initLSC, _initHSC];
+
+// ---- 自适应平滑 (bilateral-ish filtering) ----
+function _adaptiveSmooth(freqs, r, smoothF0, smoothF1, smoothLo, smoothHi,
+    biasF0, biasF1, biasF2, biasF3, biasLo, biasMd, biasHi, clipF) {
+  const K = freqs.length;
+  const H = Math.max(1, Math.round(K / 8));
+  const smoothL0 = Math.log(smoothF0), smoothL1 = Math.log(smoothF1);
+  const biasL0 = Math.log(biasF0), biasL1 = Math.log(biasF1);
+  const biasL2 = Math.log(biasF2), biasL3 = Math.log(biasF3);
+  const x = r.slice();
+  const clipIdx = _search(freqs, clipF);
+  function _sgm(xx, x0, x1) {
+    const SMOOTH = 4;
+    const k = SMOOTH / (x1 - x0), m = 0.5*(x0 + x1);
+    return 0.5*Math.tanh(0.5*k*(xx - m)) + 0.5;
+  }
+  for (let k = 0; k < K; k++) {
+    const fk = freqs[k], l = Math.log(fk), xk = x[k];
+    const sigma = smoothLo + (smoothHi - smoothLo)*_sgm(l, smoothL0, smoothL1);
+    const bias = biasLo + (biasMd - biasLo)*_sgm(l, biasL0, biasL1) + (biasHi - biasMd)*_sgm(l, biasL2, biasL3);
+    let a = 0, c = 0;
+    for (let j = -H; j <= H; j++) {
+      let s = k + j;
+      s = s < 0 ? 0 : s > clipIdx ? clipIdx : s;
+      const xs = x[s], dSpatial = _sq(j * sigma), dRange = bias * (xs - xk);
+      const w = Math.exp(-0.5*dSpatial + dRange);
+      a += w * x[s]; c += w;
+    }
+    r[k] = a / c;
+  }
+}
+
+// ---- 高频滚降 ----
+function _trebleRolloff(freqs, r, fTreble) {
+  const K = freqs.length;
+  const trebleIdx = _search(freqs, fTreble);
+  const nTreble = K - trebleIdx;
+  if (nTreble <= 1) return;
+  const inv = 1 / (nTreble - 1);
+  for (let i = 0; i < nTreble; i++) {
+    const t = i * inv;
+    r[trebleIdx + i] *= Math.cos(0.5 * Math.PI * t);
+  }
+}
+
+// ---- AdaBelief 优化器 ----
+class _AdaBelief {
+  constructor(N) {
+    this.N = N;
+    this.W = 3*N + 1;
+    this.b1 = 0.9; this.b2 = 0.99;
+    this.b1t = 0.9; this.b2t = 0.99;
+    this.eps = 1e-12; this.eps_root = 1e-12;
+    this.lr = 3e-2;
+    this.step = 0;
+    this.m = new Float64Array(this.W);
+    this.s = new Float64Array(this.W);
+  }
+  stepOpt(x, g) {
+    for (let w = 0; w < this.W; w++) {
+      this.m[w] = this.b1*this.m[w] + (1-this.b1)*g[w];
+      this.s[w] = this.b2*this.s[w] + (1-this.b2)*_sq(g[w] - this.m[w]);
+      const mHat = this.m[w] / (1 - this.b1t);
+      const sHat = this.s[w] / (1 - this.b2t);
+      const den = Math.sqrt(sHat + this.eps_root) + this.eps;
+      x[w] -= this.lr * mHat / den;
+    }
+    this.b1t *= this.b1; this.b2t *= this.b2;
+    this.step++;
+  }
+}
+
+// ---- 解析梯度计算 ----
+function _grad(types, phi, r, fs, N, optAmp, x, g) {
+  const K = r.length;
+  const rK = 1 / K;
+  const dy_dw0 = []; const dy_dgain = []; const dy_dbw = [];
+  const w0_v = [];
+  let predInit = optAmp ? _exp10(x[3*N] / 10) : 1;
+  const pred = new Float64Array(K).fill(predInit);
+
+  for (let n = 0; n < N; n++) {
+    const lf = x[0*N + n], gainVal = x[1*N + n], bw = x[2*N + n];
+    const f0 = Math.exp(lf);
+    const A = _exp10(gainVal / 40);
+    const w0 = 2*Math.PI/fs * f0;
+    const cos_w = Math.cos(w0), sin_w = Math.sin(w0);
+    const kQ = Math.sinh(0.5*Math.LN2 * bw);
+    const alpha = sin_w * kQ;
+    w0_v[n] = w0;
+    const s = _BIQUAD_FNS[types[n]](A, cos_w, alpha);
+    const dA_dgain = A * Math.LN10/40;
+    const dalpha_dw0 = cos_w * kQ;
+    const dalpha_dbw = sin_w * Math.cosh(0.5*Math.LN2 * bw) * 0.5*Math.LN2;
+    const dcos_dw0 = -sin_w;
+    const b_x0 = _sq(s.b0 + s.b1 + s.b2);
+    const b_x1 = -4*(s.b0*s.b1 + 4*s.b0*s.b2 + s.b1*s.b2);
+    const b_x2 = 16*s.b0*s.b2;
+    const a_x0 = _sq(s.a0 + s.a1 + s.a2);
+    const a_x1 = -4*(s.a0*s.a1 + 4*s.a0*s.a2 + s.a1*s.a2);
+    const a_x2 = 16*s.a0*s.a2;
+    const ba = s.b0 + s.b1 + s.b2;
+    const aa = s.a0 + s.a1 + s.a2;
+    const dy0 = []; const dy1 = []; const dy2 = [];
+    for (let k = 0; k < K; k++) {
+      const phiK = phi[k];
+      const bPoly = b_x0 + phiK*(b_x1 + phiK*b_x2);
+      const aPoly = a_x0 + phiK*(a_x1 + phiK*a_x2);
+      pred[k] *= bPoly / aPoly;
+      const _8phi2 = 8*_sq(phiK), _2phi = 2*phiK;
+      const bm = 20/Math.LN10 / bPoly, am = -20/Math.LN10 / aPoly;
+      const dy_db0 = bm * (ba - _2phi*(s.b1 + 4*s.b2) + _8phi2*s.b2);
+      const dy_db1 = bm * (ba - _2phi*(s.b0 + s.b2));
+      const dy_db2 = bm * (ba - _2phi*(4*s.b0 + s.b1) + _8phi2*s.b0);
+      const dy_da0 = am * (aa - _2phi*(s.a1 + 4*s.a2) + _8phi2*s.a2);
+      const dy_da1 = am * (aa - _2phi*(s.a0 + s.a2));
+      const dy_da2 = am * (aa - _2phi*(4*s.a0 + s.a1) + _8phi2*s.a0);
+      const dy_dA = dy_db0*s.db0_dA + dy_db1*s.db1_dA + dy_db2*s.db2_dA
+                  + dy_da0*s.da0_dA + dy_da1*s.da1_dA + dy_da2*s.da2_dA;
+      const dy_dalpha = dy_db0*s.db0_dalpha + dy_db2*s.db2_dalpha
+                      + dy_da0*s.da0_dalpha + dy_da2*s.da2_dalpha;
+      const dy_dcos = dy_db0*s.db0_dcos + dy_db1*s.db1_dcos + dy_db2*s.db2_dcos
+                    + dy_da0*s.da0_dcos + dy_da1*s.da1_dcos + dy_da2*s.da2_dcos;
+      dy0[k] = dy_dalpha*dalpha_dw0 + dy_dcos*dcos_dw0;
+      dy1[k] = dy_dA*dA_dgain;
+      dy2[k] = dy_dalpha*dalpha_dbw;
+    }
+    dy_dw0[n] = dy0; dy_dgain[n] = dy1; dy_dbw[n] = dy2;
+  }
+
+  let L = 0; const dL_dy = new Float64Array(K); let dL_dySum = 0;
+  for (let k = 0; k < K; k++) {
+    const d = 10*Math.log10(pred[k]) - r[k];
+    L += _sq(d);
+    dL_dySum += dL_dy[k] = 2*d;
+  }
+  L *= rK;
+  // amp gradient
+  g[3*N] = optAmp ? dL_dySum * rK : 0;
+  for (let n = 0; n < N; n++) {
+    let glf = 0, ggain = 0, gbw = 0;
+    for (let k = 0; k < K; k++) {
+      glf += dL_dy[k]*dy_dw0[n][k];
+      ggain += dL_dy[k]*dy_dgain[n][k];
+      gbw += dL_dy[k]*dy_dbw[n][k];
+    }
+    g[0*N + n] = glf * rK * w0_v[n];
+    g[1*N + n] = ggain * rK;
+    g[2*N + n] = gbw * rK;
+  }
+  return L;
+}
+
+// ---- 主拟合循环 ----
+function _fit(steps, types, f0, gain, Q, amp, f0Lim, gainLim, QLim, N, freqs, r, fs) {
+  const K = freqs.length;
+  const lfLim = [], bwLim = [];
+  for (let n = 0; n < N; n++) {
+    lfLim[n] = { lo: Math.log(f0Lim[n].lo), hi: Math.log(f0Lim[n].hi) };
+    bwLim[n] = { lo: _q2bw(QLim[n].hi), hi: _q2bw(QLim[n].lo) };
+  }
+  const phi = new Float64Array(K);
+  for (let k = 0; k < K; k++) phi[k] = _sq(Math.sin(Math.PI / fs * freqs[k]));
+
+  const x = new Float64Array(3*N + 1);
+  for (let n = 0; n < N; n++) {
+    x[0*N + n] = Math.log(f0[n]);
+    x[1*N + n] = gain[n];
+    x[2*N + n] = _q2bw(Q[n]);
+  }
+  if (amp != null) x[3*N] = amp;
+  const optAmp = amp != null;
+
+  const g = new Float64Array(3*N + 1);
+  let bestL = 1e9;
+  const bestX = new Float64Array(3*N + 1);
+  const opt = new _AdaBelief(N);
+
+  for (let step = 0; step < steps; step++) {
+    const L = _grad(types, phi, r, fs, N, optAmp, x, g);
+    opt.stepOpt(x, g);
+    // box constraints
+    for (let n = 0; n < N; n++) {
+      if (x[0*N + n] !== _clip(x[0*N + n], lfLim[n].lo, lfLim[n].hi)) { x[0*N + n] = _clip(x[0*N + n], lfLim[n].lo, lfLim[n].hi); opt.m[0*N + n] = 0; }
+      if (x[1*N + n] !== _clip(x[1*N + n], gainLim[n].lo, gainLim[n].hi)) { x[1*N + n] = _clip(x[1*N + n], gainLim[n].lo, gainLim[n].hi); opt.m[1*N + n] = 0; }
+      if (x[2*N + n] !== _clip(x[2*N + n], bwLim[n].lo, bwLim[n].hi)) { x[2*N + n] = _clip(x[2*N + n], bwLim[n].lo, bwLim[n].hi); opt.m[2*N + n] = 0; }
+    }
+    if (L < bestL) { bestL = L; for (let w = 0; w < 3*N+1; w++) bestX[w] = x[w]; }
+  }
+  for (let n = 0; n < N; n++) {
+    f0[n] = Math.exp(bestX[0*N + n]);
+    gain[n] = bestX[1*N + n];
+    Q[n] = _bw2q(bestX[2*N + n]);
+  }
+  if (amp != null) amp = bestX[3*N];
+  return { amp, loss: bestL };
+}
+
+// ---- 预处理 ----
+function _preprocess(freqs, dst, src, r, smooth, demean) {
+  const K = freqs.length;
+  for (let k = 0; k < K; k++) r[k] = dst[k] - src[k];
+  if (smooth) {
+    _adaptiveSmooth(freqs, r,
+      smooth.smoothF0, smooth.smoothF1, smooth.smoothLo, smooth.smoothHi,
+      smooth.biasF0, smooth.biasF1, smooth.biasF2, smooth.biasF3,
+      smooth.biasLo, smooth.biasMd, smooth.biasHi, smooth.clipF);
+  }
+  let mean = 0;
+  if (demean) {
+    const sum = r.reduce((a, b) => a + b, 0);
+    mean = sum / K;
+    for (let k = 0; k < K; k++) r[k] -= mean;
+  }
+  _trebleRolloff(freqs, r, smooth ? 16000 : 18500);
+  return mean;
+}
+
+// ---- 顶层 autoeq ----
+function _autoeq(steps, types, f0, gain, Q, amp, f0Lim, gainLim, QLim, N, freqs, r, fs) {
+  const K = freqs.length;
+  const rInit = r.slice();
+  // 顺序初始化
+  for (let n = 0; n < N; n++) {
+    const p = _INIT_FNS[types[n]](rInit, freqs, fs, f0Lim[n], gainLim[n], QLim[n]);
+    _spectrum(types[n], p.f0, -p.gain, p.Q, fs, freqs, rInit);
+    f0[n] = p.f0; gain[n] = p.gain; Q[n] = p.Q;
+  }
+  if (amp != null) amp = 0;
+  return _fit(steps, types, f0, gain, Q, amp, f0Lim, gainLim, QLim, N, freqs, r, fs);
+}
+
+// ---- 对外接口：改名为 generateAutoPEQ，保持与原调用方兼容 ----
+function generateAutoPEQ(freqData, count, freqLow, freqHigh, maxGain, tiltDB) {
   if (!freqData || freqData.length < 5) return [];
 
-  maxGain = maxGain > 0 ? maxGain : 20;
-  tolerance = tolerance != null ? tolerance : 3;
-  // count 较多时自动降低极值检测阈值（peakTol），让更多小峰谷入选
-  // count=5~10 时 peakTol=tolerance（默认3dB），count=20 时降至 tolerance×0.6≈1.8dB
-  const peakTol = count <= 10 ? tolerance : Math.max(0.5, tolerance * (1 - 0.4 * (count - 10) / 10));
-
+  const K = freqData.length;
   const freqs = freqData.map(d => d.freq);
-  const N = freqData.length;
-
-  // 统一峰值归一化：不依赖调用方是否已归一化
   const rawDB = freqData.map(d => d.dB);
   const maxDB = Math.max(...rawDB);
   const dbNorm = rawDB.map(v => v - maxDB);
 
-  // 自动推测目标增益
-  if (targetDB == null) {
-    const vals = [];
-    for (let i = 0; i < N; i++) {
-      if ((!freqLow || freqs[i] >= freqLow) && (!freqHigh || freqs[i] <= freqHigh)) {
-        vals.push(dbNorm[i]);
-      }
+  // 轻度平滑原始测量数据，消除单点测量伪影（如驻波相消导致的孤立深谷）
+  // 使用 1 遍 3 点加权平均：中间点权重 50%，两侧各 25%
+  const smoothed = dbNorm.slice();
+  for (let i = 1; i < K - 1; i++) {
+    // 仅当当前点与两侧差异显著（> 5dB）时才平滑，避免抹平真实峰谷
+    const diff = Math.abs(2 * dbNorm[i] - dbNorm[i - 1] - dbNorm[i + 1]);
+    if (diff > 5) {
+      smoothed[i] = dbNorm[i - 1] * 0.25 + dbNorm[i] * 0.5 + dbNorm[i + 1] * 0.25;
     }
-    vals.sort((a, b) => a - b);
-    targetDB = vals.length > 0 ? vals[Math.floor(vals.length / 2)] : 0;
   }
 
-  // 残差 = 归一化频响 - 目标增益
-  let residual = dbNorm.map(v => v - targetDB);
+  // 倾斜曲线：tiltDB 表示 20Hz 比 20000Hz 高出的 dB 数
+  const log20 = Math.log(20), log20k = Math.log(20000);
+  const tiltOffsets = (tiltDB != null && tiltDB !== 0) ? freqs.map(f => {
+    const fl = Math.max(f, 20);
+    const ratio = (Math.log(fl) - log20) / (log20k - log20);
+    return tiltDB * (0.5 - Math.min(1, Math.max(0, ratio)));
+  }) : null;
 
-  // 频率权重：只在指定范围内做平直
+  // 构建源曲线和目标曲线
+  // 目标固定为 0dB（去均值后等效于测量值中位数）
+  const src = smoothed;
+  const dst = new Float64Array(K); // 全零
+
+  // 残差 = dst - src，由 _preprocess 计算
+  // 频率范围屏蔽在预处理后手动应用
+  const r = [];
+  for (let k = 0; k < K; k++) r[k] = 0;
+
+  // 配置滤波器类型 [LSC, HSC, PK, PK, ...]
+  const N = Math.min(count, 32);
+  const types = [];
+  const f0Lim = [], gainLim = [], QLim = [];
+  const f0 = new Float64Array(N), gain = new Float64Array(N), Q = new Float64Array(N);
+
+  // 使用用户设定的频响调整范围作为滤波器频率限制
+  // 留 2% 边界余量，避免滤波器聚集在范围边缘
+  const fl = Math.max(freqLow || 20, 20) * 1.02;
+  const fh = Math.min(freqHigh || 20000, 20000) * 0.98;
+  const lim = { lo: fl, hi: fh };
+  const gLim = { lo: -maxGain, hi: maxGain };
+  const qLim = { lo: 0.4, hi: 4 };
+
+  for (let n = 0; n < N; n++) {
+    if (n === 0)            { types[n] = AE.LSC; f0Lim[n] = { lo: Math.max(fl, 40), hi: Math.min(fh, 10000) }; gainLim[n] = gLim; QLim[n] = { lo: 0.4, hi: 3 }; }
+    else if (n === 1)       { types[n] = AE.HSC; f0Lim[n] = { lo: Math.max(fl, 40), hi: Math.min(fh, 10000) }; gainLim[n] = gLim; QLim[n] = { lo: 0.4, hi: 3 }; }
+    else                    { types[n] = AE.PK;  f0Lim[n] = lim; gainLim[n] = gLim; QLim[n] = qLim; }
+  }
+
+  const FS = 48000;
+
+  // 自适应平滑 (通用配置)
+  const smooth = {
+    smoothLo: 0.3, smoothHi: 0.03,
+    smoothF0: 3000, smoothF1: 12000,
+    biasLo: 0, biasMd: 0.15, biasHi: 0.03,
+    biasF0: 10000, biasF1: 13000,
+    biasF2: 14000, biasF3: 20000,
+    clipF: 18500,
+  };
+
+  // 预处理（平滑 + 去均值 + 高频滚降）
+  const residual = new Float64Array(K);
+  const meanOffset = _preprocess(freqs, dst, src, residual, smooth, true);
+
+  // 在去均值之后叠加倾斜曲线，避免 center_mean 抵消倾斜
+  if (tiltOffsets) {
+    for (let k = 0; k < K; k++) residual[k] += tiltOffsets[k];
+  }
+
+  // 频率范围屏蔽（含边界），在预处理后执行
   if (freqLow && freqHigh) {
-    for (let i = 0; i < N; i++) {
-      if (freqs[i] < freqLow || freqs[i] > freqHigh) residual[i] = 0;
+    for (let i = 0; i < K; i++) {
+      if (freqs[i] <= freqLow || freqs[i] >= freqHigh) residual[i] = 0;
     }
   }
 
-  // 保存原始残差（用于增益计算）
-  const rawResidual = residual.slice();
+  // 执行优化 (1200 步迭代)
+  const result = _autoeq(
+    1200, types, f0, gain, Q, 0,
+    f0Lim, gainLim, QLim, N, freqs, residual, FS
+  );
 
-  // 预滤波
-  const smoothPasses = count > 20 ? Math.min(12, count - 15) : Math.max(3, Math.min(12, 14 - count * 0.4));
-  for (let pass = 0; pass < smoothPasses; pass++) {
-    const prev = residual.slice();
-    for (let i = 2; i < N - 2; i++) {
-      residual[i] = (prev[i-2] + prev[i-1] + prev[i] + prev[i+1] + prev[i+2]) / 5;
-    }
+  // 组装返回格式（不预先四舍五入，后处理完再统一舍入）
+  const bands = [];
+  for (let n = 0; n < N; n++) {
+    const gv = gain[n];
+    if (Math.abs(gv) < 0.3) continue;
+    bands.push({ freq: f0[n], gain: gv, Q: Q[n] });
   }
+  bands.sort((a, b) => a.freq - b.freq);
 
-  // peaking filter（峰式滤波器）在指定频率的增益（dB），基于 RBJ 双二阶公式
-  // f0=中心频率, gainDB=增益, Q=品质因数, freq=目标频率, sampleRate=采样率
-  function peakingGain(f0, gainDB, Q, freq) {
-    const A = Math.pow(10, gainDB / 40);
-    const w0 = 2 * Math.PI * f0 / 48000;
-    const alpha = Math.sin(w0) / (2 * Q);
-    const b0 = 1 + alpha * A, b1 = -2 * Math.cos(w0), b2 = 1 - alpha * A;
-    const a0 = 1 + alpha / A, a1 = -2 * Math.cos(w0), a2 = 1 - alpha / A;
-    const w = 2 * Math.PI * freq / 48000;
-    const c = Math.cos(w), s = Math.sin(w);
-    const nr = b0 + b1*c + b2*Math.cos(2*w);
-    const ni = b1*s + b2*Math.sin(2*w);
-    const dr = a0 + a1*c + a2*Math.cos(2*w);
-    const di = a1*s + a2*Math.sin(2*w);
-    return 10 * Math.log10(Math.max((nr*nr+ni*ni)/(dr*dr+di*di), 1e-12));
-  }
+  // 后处理：合并邻近的重复滤波器
+  // 扫描过程中 bands 会变短，使用 while 循环
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let i = bands.length - 1; i >= 1 && !changed; i--) {
+      for (let j = i - 1; j >= 0 && !changed; j--) {
+        const ratio = bands[i].freq / bands[j].freq;
+        if (ratio > 1.05) continue; // 频率相差 > 5%，跳过
 
-  // ======== 极值点检测：在平滑残差上找波峰波谷，再定位到原始残差的真正极值 ========
-  const allPeaks = [];
-  for (let i = 4; i < residual.length - 4; i++) {
-    const isPeak = residual[i] > residual[i-1] && residual[i] > residual[i+1] && residual[i] >= residual[i-2] && residual[i] >= residual[i+2];
-    const isValley = residual[i] < residual[i-1] && residual[i] < residual[i+1] && residual[i] <= residual[i-2] && residual[i] <= residual[i+2];
-    if (!isPeak && !isValley) continue;
-
-    // 在原始残差（rawResidual）上，以检测点为中心 ±6 个点，找真正的极值点
-    const searchR = 6;
-    let bestIdx = i;
-    if (isPeak) {
-      const lo = Math.max(0, i - searchR), hi = Math.min(residual.length - 1, i + searchR);
-      for (let j = lo; j <= hi; j++) {
-        if (rawResidual[j] > rawResidual[bestIdx]) bestIdx = j;
-      }
-    } else {
-      const lo = Math.max(0, i - searchR), hi = Math.min(residual.length - 1, i + searchR);
-      for (let j = lo; j <= hi; j++) {
-        if (rawResidual[j] < rawResidual[bestIdx]) bestIdx = j;
-      }
-    }
-
-    // 用 rawResidual 的真实极值幅度判断是否显著（不受平滑影响）
-    if (Math.abs(rawResidual[bestIdx]) < peakTol) continue;
-
-    // 测量半高宽（基于平滑后残差的检测点 i，用于计算 score）
-    const peakAbs = Math.abs(residual[i]);
-    const half = peakAbs / 2;
-    let left = i, right = i;
-    for (let j = i - 1; j >= 0; j--) {
-      if (Math.abs(residual[j]) > peakAbs) break;
-      if (Math.abs(Math.abs(residual[j]) - half) < Math.abs(Math.abs(residual[left]) - half)) left = j;
-    }
-    for (let j = i + 1; j < residual.length; j++) {
-      if (Math.abs(residual[j]) > peakAbs) break;
-      if (Math.abs(Math.abs(residual[j]) - half) < Math.abs(Math.abs(residual[right]) - half)) right = j;
-    }
-    const octBW = Math.log2(freqs[Math.min(right, residual.length-1)] / freqs[Math.max(0, left)]);
-    const width = Math.max(0.05, octBW);
-    // 频率权重：低频优先，对数刻度从 20Hz(1.0) 线性衰减到 20kHz(0.2)
-    const logF = Math.log2(Math.max(20, Math.min(20000, freqs[bestIdx])));
-    const fWeight = 1 - 0.8 * (logF - Math.log2(20)) / (Math.log2(20000) - Math.log2(20));
-    // sqrt(width) 避免 width² 过度压制窄峰（房间模式常为窄峰）
-    const score = Math.sqrt(Math.max(0.05, octBW)) * Math.sqrt(Math.abs(rawResidual[bestIdx])) * fWeight;
-    allPeaks.push({ idx: bestIdx, freq: freqs[bestIdx], gain: rawResidual[bestIdx], q: 2, score });
-  }
-
-  // 按面积降序排列，逐步选取，确保相邻 PEQ 频率间隔 ≥ 1.3 倍
-  allPeaks.sort((a, b) => b.score - a.score);
-  const selected = [];
-  for (const p of allPeaks) {
-    if (selected.length >= count) break;
-    // 检查与已选 PEQ 的频率间隔
-    let tooClose = false;
-    for (const s of selected) {
-      const ratio = Math.max(p.freq, s.freq) / Math.min(p.freq, s.freq);
-      if (ratio < 1.25) { tooClose = true; break; }
-    }
-    if (!tooClose) selected.push(p);
-  }
-  // 按频率升序排列
-  selected.sort((a, b) => a.freq - b.freq);
-
-  // ======== 局部优化：微调每个 PEQ 的 gain 和 Q ========
-  // 转成可变数组，gain = 补偿增益（与残差反号）
-  const bands = selected.map(p => ({
-    freq: p.freq,
-    gain: Math.max(-maxGain, Math.min(maxGain, -p.gain)),
-    Q: 2.0
-  })).filter(p => Math.abs(p.gain) >= Math.max(0.3, peakTol * 0.1));
-
-  if (bands.length > 0) {
-    // 计算第 k 个 band 在局部窗口内的 RMS 误差
-    // （局部窗口为 [freq/1.5, freq*1.5]，约 ±0.58 倍频程，避免包含极性相反的峰谷）
-    function _localErr(k, testGain, testQ) {
-      const f0 = bands[k].freq;
-      const lo = f0 / 1.5, hi = f0 * 1.5;
-      let sumSq = 0, cnt = 0;
-      for (let i = 0; i < N; i++) {
-        const f = freqs[i];
-        if (f < lo || f > hi) continue;
-        let total = 0;
-        for (let j = 0; j < bands.length; j++) {
-          const g = (j === k) ? testGain : bands[j].gain;
-          const q = (j === k) ? testQ : bands[j].Q;
-          total += peakingGain(bands[j].freq, g, q, f);
+        // --- 情况 A：同号增益 → 合并为单个滤波器 ---
+        if (bands[i].gain * bands[j].gain >= 0) {
+          // 取增益较大的那个，频率取加权平均，Q 取较大的
+          const abs_i = Math.abs(bands[i].gain);
+          const abs_j = Math.abs(bands[j].gain);
+          const total = abs_i + abs_j;
+          const merged = {
+            freq: (bands[i].freq * abs_i + bands[j].freq * abs_j) / total,
+            gain: bands[i].gain + bands[j].gain,
+            Q: Math.max(bands[i].Q, bands[j].Q),
+          };
+          bands[j] = merged;
+          bands.splice(i, 1);
+          changed = true;
+          break;
         }
-        // 平直区间：在 tolerance 内的残差不计入误差（避免 PEQ 宽带特性扰动中性点）
-        const resid = rawResidual[i];
-        if (Math.abs(resid) <= tolerance) continue;
-        const need = resid - Math.sign(resid) * tolerance;
-        const err = total + need;
-        sumSq += err * err;
-        cnt++;
-      }
-      return cnt > 0 ? Math.sqrt(sumSq / cnt) : Infinity;
-    }
 
-    // 对第 k 个 band 执行二维网格搜索
-    function _optimizeOne(k) {
-      const g0 = bands[k].gain, q0 = bands[k].Q;
-      let bestG = g0, bestQ = q0, bestE = _localErr(k, g0, q0);
+        // --- 情况 B：异号增益且近似抵消 → 移除两者 ---
+        // 只有当净增益接近 0（< 0.5dB）时才移除
+        const net = bands[i].gain + bands[j].gain;
+        if (Math.abs(net) < 0.5) {
+          bands.splice(j, 1);
+          bands.splice(i - 1, 1);
+          changed = true;
+          break;
+        }
 
-      // 粗网格：Q ∈ [0.3, 12]，增益在初始值 ± 范围
-      const gSpan = Math.max(6, Math.abs(g0) * 0.6);
-      const qC = [0.5, 0.8, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0];
-      for (const q of qC) {
-        for (let gi = -6; gi <= 6; gi++) {
-          const g = g0 + gi * gSpan / 6;
-          if (Math.abs(g) > maxGain) continue;
-          const e = _localErr(k, g, q);
-          if (e < bestE) { bestE = e; bestG = g; bestQ = q; }
+        // --- 情况 C：异号但不抵消 → 只保留主导的 ---
+        // 增益较小的那个移除，因为它被较大的抵消了大部分
+        if (abs_i > abs_j * 1.5) {
+          bands.splice(j, 1);
+          changed = true;
+          break;
+        } else if (abs_j > abs_i * 1.5) {
+          bands.splice(i, 1);
+          changed = true;
+          break;
         }
       }
-
-      // 细网格：围绕粗最优值精细扫描（用固定引用 refQ 避免 cascading）
-      const refQ = bestQ;
-      for (let gi = -8; gi <= 8; gi++) {
-        const g = bestG + gi * 0.2;
-        if (Math.abs(g) > maxGain) continue;
-        for (let qi = -8; qi <= 8; qi++) {
-          const q = Math.max(0.5, Math.min(12, refQ + qi * 0.15));
-          const e = _localErr(k, g, q);
-          if (e < bestE) { bestE = e; bestG = g; bestQ = q; }
-        }
-      }
-      bands[k].gain = Math.round(bestG * 10) / 10;
-      bands[k].Q = Math.round(bestQ * 10) / 10;
-    }
-
-    // 迭代 2 轮：每轮逐个优化所有 band
-    for (let r = 0; r < 2; r++) {
-      for (let k = 0; k < bands.length; k++) _optimizeOne(k);
-    }
-
-    // ======== 全局 gain 微调：最小化 PEQ 之间的互相干扰 ========
-    // 用 Gauss-Seidel 迭代，在每个 PEQ 频率点修正 gain
-    for (let r = 0; r < 3; r++) {
-      for (let k = 0; k < bands.length; k++) {
-        const f0 = bands[k].freq;
-        // 找到 f0 在 freqs 中的最近索引
-        let idx = 0;
-        for (let i = 1; i < N; i++) {
-          if (Math.abs(freqs[i] - f0) < Math.abs(freqs[idx] - f0)) idx = i;
-        }
-        // 所有 band 在 f0 处的总增益
-        let total = 0;
-        for (let j = 0; j < bands.length; j++) {
-          total += peakingGain(bands[j].freq, bands[j].gain, bands[j].Q, f0);
-        }
-        // 需要的补偿（考虑 tolerance 死区）
-        const resid = rawResidual[idx];
-        const need = Math.abs(resid) <= tolerance ? 0 : resid - Math.sign(resid) * tolerance;
-        const target = Math.max(-maxGain, Math.min(maxGain, -need));
-        // 误差 = 当前 - 目标，调整 gain
-        const err = total - target;
-        bands[k].gain = Math.round(Math.max(-maxGain, Math.min(maxGain, bands[k].gain - err * 0.6)) * 10) / 10;
-      }
     }
   }
 
-  const result = bands.map(p => ({
-    freq: Math.round(p.freq),
-    gain: p.gain,
-    Q: p.Q
-  }));
+  // 统一四舍五入并过滤极小增益
+  const finalBands = bands
+    .filter(b => Math.abs(b.gain) >= 0.5)
+    .map(b => ({
+      freq: Math.round(b.freq),
+      gain: Math.round(b.gain * 10) / 10,
+      Q: Math.round(b.Q * 100) / 100,
+    }));
+  finalBands.sort((a, b) => a.freq - b.freq);
 
-  return result;
+  // 后处理：修剪边界高增益滤波器
+  // 如果 HSC/LSC 在边界处增益接近 maxGain，降低 Q 使其更平缓
+  for (const b of finalBands) {
+    const nearLo = freqLow && b.freq <= freqLow * 1.1;
+    const nearHi = freqHigh && b.freq >= freqHigh * 0.9;
+    if ((nearLo || nearHi) && Math.abs(b.gain) >= maxGain * 0.9) {
+      b.Q = Math.max(0.4, b.Q * 0.7);
+    }
+  }
+
+  return finalBands;
 }
 
 // ========================================================================
-//  ChartRenderer — Canvas 绘图
 // ========================================================================
 class ChartRenderer {
   constructor(canvas) {
@@ -2223,6 +2588,9 @@ const peqMgr = new PEQManager();
 let chart = null;
 let freqData = null; // saved measurement
 
+// ========================================================================
+//  全局 DOM 引用 — 一次性获取所有 UI 元素，避免重复查询
+// ========================================================================
 // ---- DOM refs ----
 const $inDevice = document.getElementById('inDevice');
 const $outDevice = document.getElementById('outDevice');
@@ -2231,10 +2599,10 @@ const $outChannel = document.getElementById('outChannel');
 const $audioStatus = document.getElementById('audioStatus');
 const $playNoise = document.getElementById('playNoiseBtn');
 const $stopNoise = document.getElementById('stopNoiseBtn');
-const $outVolume = document.getElementById('outVolume');
-const $outVolumeVal = document.getElementById('outVolumeVal');
+
 const $inGain = document.getElementById('inGain');
 const $inGainVal = document.getElementById('inGainVal');
+const $autoLevelBtn = document.getElementById('autoLevelBtn');
 const $startSweep = document.getElementById('startSweepBtn');
 const $stopSweep = document.getElementById('stopSweepBtn');
 const $sweepFreqLow = document.getElementById('sweepFreqLow');
@@ -2327,6 +2695,101 @@ function stopNoiseLevelMonitor() {
   }
 }
 
+/**
+ * 自动调整输入电平 —— 播放白噪声并调整 micGain，使 RMS 电平接近 -15 dB
+ * 调整过程中输入增益滑杆不可用，调整完成后恢复
+ */
+function autoAdjustInputLevel() {
+  // 如果扫频正在运行，不执行
+  if (audio._sweepRunning) return;
+
+  if (!audio.ctx || audio.ctx.state === 'closed') {
+    ensureAudioReady().then(ok => { if (ok) _doAutoAdjust(); });
+    return;
+  }
+  if (audio.ctx.state === 'suspended') {
+    audio.ctx.resume().then(() => _doAutoAdjust());
+    return;
+  }
+  _doAutoAdjust();
+
+  function _doAutoAdjust() {
+    // 确保白噪声已播放
+    const noiseWasPlaying = !!audio._noiseSource;
+    if (!noiseWasPlaying) {
+      audio.startNoise(0);
+      startLevelMeter();
+      startNoiseLevelMonitor();
+      lockDevices(true);
+      $playNoise.disabled = true;
+      $stopNoise.disabled = false;
+      $startSweep.disabled = true;
+    }
+
+    // 禁用滑杆和按钮
+    $inGain.disabled = true;
+    $autoLevelBtn.disabled = true;
+    const origBtnText = $autoLevelBtn.textContent;
+
+    const TARGET_DB = -20;
+    const TOLERANCE = 2;        // ±2 dB 视为达标
+    const INTERVAL_MS = 200;    // 每 200ms 采样一次
+    const MAX_ITERATIONS = 30;  // 最多调整 6 秒
+
+    let iteration = 0;
+    let stableCount = 0;
+    let timer = null;
+
+    function stopAdjust() {
+      if (timer) clearInterval(timer);
+      $inGain.disabled = false;
+      // 只有白噪声还在播放时才启用自动调整按钮
+      $autoLevelBtn.disabled = !audio._noiseSource;
+      $autoLevelBtn.textContent = origBtnText;
+    }
+
+    timer = setInterval(() => {
+      const analyser = audio.micAnalyser;
+      if (!analyser) { stopAdjust(); return; }
+
+      // 如果白噪声已停止（用户手动点击了停止），也停止调整
+      if (!audio._noiseSource) { stopAdjust(); return; }
+
+      // 读取当前 RMS 电平
+      const buf = new Float32Array(analyser.fftSize);
+      analyser.getFloatTimeDomainData(buf);
+      let sumSq = 0;
+      for (let i = 0; i < buf.length; i++) sumSq += buf[i] * buf[i];
+      const rms = Math.sqrt(sumSq / buf.length);
+      const currentDB = rms > 1e-9 ? 20 * Math.log10(rms) : -100;
+
+      // 计算与目标电平的差值
+      const deltaDB = TARGET_DB - currentDB;
+
+      // 检查是否达标（连续 3 次稳定在容差内）
+      if (Math.abs(deltaDB) <= TOLERANCE) {
+        stableCount++;
+        if (stableCount >= 3) { stopAdjust(); return; }
+        iteration++;
+        if (iteration >= MAX_ITERATIONS) { stopAdjust(); return; }
+        return;  // 未连续达标则继续观察
+      }
+      stableCount = 0;  // 未达标，重置稳定计数
+
+      // 计算并应用新增益
+      let newGainDB = currentDB < -60 ? Math.min(36, parseFloat($inGain.value) + 12) : parseFloat($inGain.value) + deltaDB;
+      newGainDB = Math.round(Math.max(-12, Math.min(36, newGainDB)));
+
+      audio.setInGain(newGainDB);
+      $inGain.value = newGainDB;
+      $inGainVal.textContent = newGainDB;
+
+      iteration++;
+      if (iteration >= MAX_ITERATIONS) { stopAdjust(); }
+    }, INTERVAL_MS);
+  }
+}
+
 // ---- 可拖动分隔条 ----
 (function initResizer() {
   const resizer = document.getElementById('resizer');
@@ -2369,8 +2832,18 @@ async function init() {
     if (freqData) chart.setFreqData(freqData);
   });
 
-  // 先枚举设备（内部会尝试请求权限）
+  // 提前申请麦克风权限，让 enumerateDevices 能获取真实设备标签
+  // 注意：Chrome 在 file:// 下会拦截，必须通过 http://localhost 访问
+  try {
+    const permStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    window._permStream = permStream;
+  } catch (e) {
+    // 权限被拒或 file:// 协议，静默处理
+  }
+
+  // 枚举设备（获取权限后重枚举可显示真实设备名）
   await enumerateDevices();
+
   setupEventListeners();
   lockDevices(false);
   // 应用浏览器语言
@@ -2417,12 +2890,10 @@ async function enumerateDevices() {
   } catch (e) {
     console.warn('设备枚举失败:', e);
   }
-  // 检测输出设备切换支持，不支持则锁死选择框
-  const supportsOut = AudioEngine.supportsOutputSwitch();
-  $outDevice.disabled = !supportsOut;
-  if (!supportsOut) {
-    $outDevice.title = tr('supportsOutTitle');
-  }
+  // 检测输出设备切换能力，不支持则隐藏输出设备选择区域
+  const canSwitch = AudioEngine.supportsOutputSwitch();
+  const outRow = document.getElementById('outDeviceRow');
+  if (outRow) outRow.style.display = canSwitch ? '' : 'none';
 }
 
 // ---- Audio initialization & mic start ----
@@ -2431,8 +2902,11 @@ async function ensureAudioReady() {
   const deviceId = $inDevice.value || undefined;
   try {
     await audio.startMic(deviceId);
-    audio.setOutVolume(parseFloat($outVolume.value));
+    audio.setOutVolume(0);
     audio.setInGain(parseFloat($inGain.value));
+    // 重建声道下拉框
+    rebuildChannelOptions('inChannel', audio._inChannelCount || 2, false);
+    rebuildChannelOptions('outChannel', audio._outChCount || 2, true);
     audio.setOutputChannel(document.getElementById('outChannel').value);
     $audioStatus.className = 'status-badge status-done';
     $audioStatus.textContent = tr('micReady');
@@ -2460,10 +2934,8 @@ function lockDevices(locked) {
   $inChannel.disabled = !!locked;
   $outChannel.disabled = !!locked;
   $refreshDevices.disabled = !!locked;
-  const canSwitch = AudioEngine.supportsOutputSwitch();
-  $outDevice.disabled = !!locked || !canSwitch;
+  $outDevice.disabled = !!locked;
   if (!locked) {
-    $outVolume.disabled = false;
     $inGain.disabled = false;
   }
 }
@@ -2506,11 +2978,7 @@ function showConfirmDialog(message) {
 // ---- Event Listeners ----
 function setupEventListeners() {
   // Volume & Gain
-  $outVolume.addEventListener('input', () => {
-    const v = parseFloat($outVolume.value);
-    $outVolumeVal.textContent = v;
-    audio.setOutVolume(v);
-  });
+
   $inGain.addEventListener('input', () => {
     const v = parseFloat($inGain.value);
     $inGainVal.textContent = v;
@@ -2524,12 +2992,13 @@ function setupEventListeners() {
       if (!ok) return;
     }
     if (audio.ctx.state === 'suspended') await audio.ctx.resume();
-    audio.startNoise(parseFloat($outVolume.value));
+    audio.startNoise(0);
     startLevelMeter();
     startNoiseLevelMonitor();
     lockDevices(true);
     $playNoise.disabled = true;
     $stopNoise.disabled = false;
+    $autoLevelBtn.disabled = false;    // 白噪声播放时可自动调整
     $startSweep.disabled = true;       // 互斥
   });
   $stopNoise.addEventListener('click', () => {
@@ -2539,7 +3008,13 @@ function setupEventListeners() {
     lockDevices(false);
     $playNoise.disabled = false;
     $stopNoise.disabled = true;
+    $autoLevelBtn.disabled = true;     // 白噪声停止后不可自动调整
     $startSweep.disabled = false;      // 恢复
+  });
+
+  // Auto Level — 自动调整输入电平
+  $autoLevelBtn.addEventListener('click', () => {
+    autoAdjustInputLevel();
   });
 
   // Sweep — 开始时禁用白噪声按钮（互斥），开启电平表
@@ -2558,8 +3033,8 @@ function setupEventListeners() {
 
     startLevelMeter();
     lockDevices(true);
-    $outVolume.disabled = true;
     $inGain.disabled = true;
+    $autoLevelBtn.disabled = true;
 
     const lo = parseFloat($sweepFreqLow.value) || 20;
     const hi = parseFloat($sweepFreqHigh.value) || 20000;
@@ -2687,7 +3162,6 @@ function setupEventListeners() {
     const fLow = parseFloat(document.getElementById('autoPeqFreqLow').value) || 50;
     const fHigh = parseFloat(document.getElementById('autoPeqFreqHigh').value) || 16000;
     const maxGain = parseFloat(document.getElementById('autoPeqMaxGain').value) || 20;
-    const tolerance = parseFloat(document.getElementById('autoPeqTolerance').value);
     
     // 锁定控件
     const autoBtn = document.getElementById('autoPeqBtn');
@@ -2703,8 +3177,8 @@ function setupEventListeners() {
     setStatus('active', tr('processing'), tr('processing'));
     
     // 执行计算
-    const targetDB = parseFloat(document.getElementById('autoPeqTarget').value);
-    const peqs = generateAutoPEQ(freqData, count, targetDB, fLow, fHigh, maxGain, tolerance);
+    const tiltDB = parseFloat(document.getElementById('autoPeqTilt').value) || 0;
+    const peqs = generateAutoPEQ(freqData, count, fLow, fHigh, maxGain, tiltDB);
     
     // 恢复控件
     autoBtn.disabled = false;
@@ -2718,7 +3192,7 @@ function setupEventListeners() {
     document.querySelectorAll('#peqList input').forEach(el => el.disabled = false);
     
     if (peqs.length === 0) {
-      setStatus('error', tr('error'), '未能生成 PEQ 参数');
+      setStatus('error', tr('error'), tr('peqGenFailed'));
       return;
     }
     
@@ -2726,7 +3200,7 @@ function setupEventListeners() {
     for (const p of peqs) {
       peqMgr.add(p.freq, p.gain, p.Q);
     }
-    setStatus('done', tr('done'), `自动 PEQ: ${peqs.length} 个`);
+    setStatus('done', tr('done'), trf('peqGenDone', peqs.length));
   });
 
   // Import/Export
@@ -2825,7 +3299,12 @@ function exportData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `acoustic-measurement-${ts()}.json`;
+  // 在文件名中加入输入/输出设备和声道信息
+  const inDevLabel = ($inDevice.selectedOptions[0]?.textContent || '').replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '_').slice(0, 20);
+  const outDevLabel = ($outDevice.selectedOptions[0]?.textContent || '').replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '_').slice(0, 20);
+  const inCh = $inChannel.selectedOptions[0]?.textContent || $inChannel.value;
+  const outCh = $outChannel.selectedOptions[0]?.textContent || $outChannel.value;
+  a.download = `acoustic-${inDevLabel}_${inCh}-${outDevLabel}_${outCh}-${ts()}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -2843,11 +3322,13 @@ function exportRew() {
   }
   const targetSpl = parseFloat(document.getElementById('targetSplInput').value) || 76;
   const targetGain = parseFloat(document.getElementById('autoPeqTarget').value) || 0;
+  const tiltDB = parseFloat(document.getElementById('autoPeqTilt').value) || 0;
   const now = new Date();
   const dateStr = now.toISOString().replace('T', ' ').substring(0, 19);
   const lines = [];
+  const tiltNote = tiltDB !== 0 ? `, tilt ${tiltDB.toFixed(1)} dB` : '';
   lines.push(`* Exported from Acoustic Measurement Tool at ${dateStr}`);
-  lines.push(`* Source: measurement data, target SPL ${targetSpl.toFixed(1)} dB, target gain ${targetGain.toFixed(1)} dB`);
+  lines.push(`* Source: measurement data, target SPL ${targetSpl.toFixed(1)} dB, target gain ${targetGain.toFixed(1)} dB${tiltNote}`);
   lines.push('*');
   lines.push('* Freq(Hz)\tSPL(dB)\tPhase(degrees)');
   for (const d of freqData) {
@@ -2860,7 +3341,12 @@ function exportRew() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `measurement-rew-${ts()}.txt`;
+  // 在文件名中加入输入/输出设备和声道信息
+  const inDevLabel = ($inDevice.selectedOptions[0]?.textContent || '').replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '_').slice(0, 20);
+  const outDevLabel = ($outDevice.selectedOptions[0]?.textContent || '').replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '_').slice(0, 20);
+  const inCh = $inChannel.selectedOptions[0]?.textContent || $inChannel.value;
+  const outCh = $outChannel.selectedOptions[0]?.textContent || $outChannel.value;
+  a.download = `rew-${inDevLabel}_${inCh}-${outDevLabel}_${outCh}-${ts()}.txt`;
   a.click();
   URL.revokeObjectURL(url);
 }
