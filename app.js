@@ -661,6 +661,12 @@ class AudioEngine {
   async init() {
     if (this.ctx && this.ctx.state !== 'closed') return;
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Safari 可能因音频会话冲突将 context 中断/挂起，自动恢复
+    this.ctx.onstatechange = () => {
+      if (this.ctx.state === 'suspended' || this.ctx.state === 'interrupted') {
+        this.ctx.resume().catch(() => {});
+      }
+    };
     this.masterGain = this.ctx.createGain();
     this.masterGain.gain.value = 1;
     this.masterAnalyser = this.ctx.createAnalyser();
@@ -704,11 +710,16 @@ class AudioEngine {
       }
     };
     this.micStream = await navigator.mediaDevices.getUserMedia(constraints);
-    // Detect input channel count
+    // 检测输入声道数
     try {
       const track = this.micStream.getAudioTracks()[0];
       const settings = track.getSettings();
       this._inChannelCount = settings.channelCount || 2;
+      // Safari 可能意外断开麦克风 track，监听 ended 事件以自动恢复
+      track.onended = () => {
+        console.warn('Mic track ended unexpectedly, restarting...');
+        this.startMic(deviceId).catch(() => {});
+      };
     } catch(e) {
       this._inChannelCount = 2;
     }
@@ -1670,6 +1681,13 @@ function updateLevelMeter() {
   const analyser = audio.micAnalyser;
   if (!analyser) {
     $meterFill.style.width = '0%';
+    $levelDB.textContent = '—∞ dB';
+    return;
+  }
+  // Safari 可能将 AudioContext 挂起/中断，尝试恢复
+  if (audio.ctx && (audio.ctx.state === 'suspended' || audio.ctx.state === 'interrupted')) {
+    audio.ctx.resume().catch(() => {});
+    $meterFill.style.width = '1%';
     $levelDB.textContent = '—∞ dB';
     return;
   }
