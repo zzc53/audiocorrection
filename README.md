@@ -5,6 +5,8 @@
 ![Screenshot](https://img.shields.io/badge/status-beta-blue)
 ![License](https://img.shields.io/badge/license-MIT%20%2B%20LGPL-green)
 
+![Screenshot](screenshot.png)
+
 ## Features
 
 - **Sweep measurement** — plays a log-spaced sine sweep through your speakers/headphones and captures the response via microphone
