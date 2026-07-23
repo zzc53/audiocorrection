@@ -39,6 +39,7 @@ const STR = {
     from:'起始', to:'终止', points:'点数', dur:'时长', ms:'ms',
     filter:'带通滤波',
     ready:'就绪', waiting:'等待测量', preparing:'准备中…', processing:'处理中…',
+    sweepGenerate:'生成扫频信号…', sweepMeasuring:'扫频测量中…', sweepFFT:'FFT 分析中…', sweepDone:'扫频完成',
     measuring:'测量中', pointFmt:(c,t,f)=>`点 ${c}/${t}  ${f.toFixed(0)} Hz`,
     done:'完成', doneFmt:(n,lo,hi)=>`${n} 个频率点 · 范围 ${lo}–${hi} Hz`,
     error:'错误', stopped:'已停止', aborted:'测量被中止',
@@ -85,6 +86,7 @@ const STR = {
     from:'From', to:'To', points:'Points', dur:'Duration', ms:'ms',
     filter:'Bandpass',
     ready:'Ready', waiting:'Awaiting measurement', preparing:'Preparing…', processing:'Processing…',
+    sweepGenerate:'Generating sweep…', sweepMeasuring:'Measuring…', sweepFFT:'FFT analysis…', sweepDone:'Sweep done',
     measuring:'Measuring', pointFmt:(c,t,f)=>`Point ${c}/${t}  ${f.toFixed(0)} Hz`,
     done:'Done', doneFmt:(n,lo,hi)=>`${n} points · ${lo}–${hi} Hz`,
     error:'Error', stopped:'Stopped', aborted:'Measurement aborted',
@@ -630,6 +632,7 @@ class AudioEngine {
     this._noiseGain = null;
     this._sweepOsc = null;
     this._sweepGain = null;
+    this._sweepSource = null;
     this._sweepRunning = false;
     this._onAudioData = null; // callback (buffer) when mic data arrives
     this._scriptNode = null;
@@ -926,7 +929,7 @@ class AudioEngine {
     if (this._sweepRunning) return;
     this._sweepRunning = true;
     this._inputBuffers = [];
-    this._isRecording = true;
+    this._isRecording = false; // will enable right before sweep playback
 
     const fs = this.ctx.sampleRate;
     onProgress(0, 1, tr('sweepGenerate'));
@@ -960,16 +963,22 @@ class AudioEngine {
     sweepBuffer.getChannelData(0).set(sweepSignal);
     const source = this.ctx.createBufferSource();
     source.buffer = sweepBuffer;
+    this._sweepSource = source;
     const sweepGain = this.ctx.createGain();
     sweepGain.gain.value = 1.0;
     source.connect(sweepGain);
     sweepGain.connect(this.masterGain);
+    // Clear any pre-sweep buffered data and start recording
+    inputBuffer.length = 0;
+    recordedSamples = 0;
+    this._isRecording = true;
     source.start();
     onProgress(1, 2, tr('sweepMeasuring'));
 
     // Wait for sweep + silence for room decay
     await this._sleep(Math.ceil(duration * 1000) + 1000);
     source.stop();
+    this._sweepSource = null;
     this._isRecording = false;
 
     this.micGain.disconnect(scriptNode);
@@ -990,9 +999,9 @@ class AudioEngine {
     // Deconvolve to get impulse response
     const ir = this._deconvolve(recorded, invFilter);
 
-    // Window impulse response around peak
+    // Window impulse response around peak (use absolute value for peak detection)
     let peakIdx = 0;
-    for (let i = 1; i < ir.length; i++) { if (ir[i] > ir[peakIdx]) peakIdx = i; }
+    for (let i = 1; i < ir.length; i++) { if (Math.abs(ir[i]) > Math.abs(ir[peakIdx])) peakIdx = i; }
     const irLen = 65536; // 2^16, ~0.73 Hz resolution at 48kHz
     const irStart = Math.max(0, peakIdx - irLen / 4);
     const irWin = new Float64Array(irLen);
@@ -1052,8 +1061,8 @@ class AudioEngine {
     const hRe = new Float64Array(fftSize);
     const hIm = new Float64Array(fftSize);
     for (let i = 0; i < fftSize; i++) {
-      hRe[i] = reRec[i] * reInv[i] + imRec[i] * imInv[i];
-      hIm[i] = imRec[i] * reInv[i] - reRec[i] * imInv[i];
+      hRe[i] = reRec[i] * reInv[i] - imRec[i] * imInv[i];
+      hIm[i] = reRec[i] * imInv[i] + imRec[i] * reInv[i];
     }
     this._ifft(hRe, hIm);
     return hRe;
@@ -1137,6 +1146,11 @@ class AudioEngine {
   abortSweep() {
     this._sweepRunning = false;
     this._isRecording = false;
+    // Stop the sweep audio source immediately
+    if (this._sweepSource) {
+      try { this._sweepSource.stop(); } catch(e) {}
+      this._sweepSource = null;
+    }
   }
 
   _sleep(ms) {
