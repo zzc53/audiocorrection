@@ -570,7 +570,7 @@ function generateAutoPEQ(freqData, count, freqLow, freqHigh, maxGain, tiltDB, us
           const total = abs_i + abs_j;
           const merged = {
             freq: (bands[i].freq * abs_i + bands[j].freq * abs_j) / total,
-            gain: bands[i].gain + bands[j].gain,
+            gain: Math.max(-maxGain, Math.min(maxGain, bands[i].gain + bands[j].gain)),
             Q: Math.max(bands[i].Q, bands[j].Q),
             type: bands[i].type || bands[j].type || 'PK',
           };
@@ -611,7 +611,7 @@ function generateAutoPEQ(freqData, count, freqLow, freqHigh, maxGain, tiltDB, us
     .filter(b => Math.abs(b.gain) >= 0.5)
     .map(b => ({
       freq: Math.round(b.freq),
-      gain: Math.round(b.gain * 10) / 10,
+      gain: Math.max(-maxGain, Math.min(maxGain, Math.round(b.gain * 10) / 10)),
       Q: Math.round(b.Q * 100) / 100,
       type: b.type || 'PK',
     }));
