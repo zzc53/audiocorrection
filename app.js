@@ -66,6 +66,7 @@ const STR = {
     confirmClearPeq:'自动计算 PEQ 将清除当前所有 PEQ 配置，是否继续？',
     confirmOk:'确定继续',
     confirmCancel:'取消',
+    confirmImportOverwrite:'当前已有测量数据，导入新数据将替换它，是否继续？',
     noDataLabel:'无测量数据',
     exportBtn:'📤 导出数据', importBtn:'📥 导入数据',
     exportRew:'📤 REW',
@@ -114,6 +115,7 @@ const STR = {
     confirmClearPeq:'Auto-calculate PEQ will clear all current PEQ settings. Continue?',
     confirmOk:'Continue',
     confirmCancel:'Cancel',
+    confirmImportOverwrite:'Current measurement data will be replaced by the imported data. Continue?',
     noDataLabel:'No data',
     exportBtn:'📤 Export', importBtn:'📥 Import',
     exportRew:'📤 REW',
@@ -159,6 +161,7 @@ const STR = {
     confirmClearPeq:'Le calcul automatique du PEQ effacera tous les réglages PEQ actuels. Continuer\u00a0?',
     confirmOk:'Continuer',
     confirmCancel:'Annuler',
+    confirmImportOverwrite:'Les données de mesure actuelles seront remplacées par les données importées. Continuer ?',
     noDataLabel:'Aucune donnée',
     exportBtn:'📤 Exporter', importBtn:'📥 Importer',
     exportRew:'📤 REW',
@@ -205,6 +208,7 @@ const STR = {
     confirmClearPeq:'El cálculo automático de PEQ borrará todos los ajustes actuales. ¿Continuar?',
     confirmOk:'Continuar',
     confirmCancel:'Cancelar',
+    confirmImportOverwrite:'Los datos de medición actuales serán reemplazados por los importados. ¿Continuar?',
     noDataLabel:'Sin datos',
     exportBtn:'📤 Exportar', importBtn:'📥 Importar',
     exportRew:'📤 REW',
@@ -252,6 +256,7 @@ const STR = {
     confirmClearPeq:'Автоматический расчет PEQ удалит все текущие настройки PEQ. Продолжить?',
     confirmOk:'Продолжить',
     confirmCancel:'Отмена',
+    confirmImportOverwrite:'Текущие данные измерений будут заменены импортированными. Продолжить?',
     noDataLabel:'Нет данных',
     exportBtn:'📤 Экспорт', importBtn:'📥 Импорт',
     exportRew:'📤 REW',
@@ -298,6 +303,7 @@ const STR = {
     confirmClearPeq:'Die automatische PEQ-Berechnung löscht alle aktuellen PEQ-Einstellungen. Fortfahren?',
     confirmOk:'Fortfahren',
     confirmCancel:'Abbrechen',
+    confirmImportOverwrite:'Vorhandene Messdaten werden durch die importierten Daten ersetzt. Fortfahren?',
     noDataLabel:'Keine Daten',
     exportBtn:'📤 Exportieren', importBtn:'📥 Importieren',
     exportRew:'📤 REW',
@@ -344,6 +350,7 @@ const STR = {
     confirmClearPeq:'自動PEQ計算を実行すると、現在のPEQ設定がすべて消去されます。続行しますか？',
     confirmOk:'続行',
     confirmCancel:'キャンセル',
+    confirmImportOverwrite:'現在の測定データはインポートされたデータに置き換えられます。続行しますか？',
     noDataLabel:'データなし',
     exportBtn:'📤 エクスポート', importBtn:'📥 インポート',
     exportRew:'📤 REW',
@@ -390,6 +397,7 @@ const STR = {
     confirmClearPeq:'자동 PEQ 계산을 실행하면 현재 PEQ 설정이 모두 지워집니다. 계속하시겠습니까?',
     confirmOk:'계속',
     confirmCancel:'취소',
+    confirmImportOverwrite:'현재 측정 데이터를 가져온 데이터로 대체합니다. 계속하시겠습니까?',
     noDataLabel:'데이터 없음',
     exportBtn:'📤 내보내기', importBtn:'📥 가져오기',
     exportRew:'📤 REW',
@@ -437,6 +445,7 @@ const STR = {
     confirmClearPeq:'O cálculo automático de PEQ limpará todas as configurações atuais de PEQ. Continuar?',
     confirmOk:'Continuar',
     confirmCancel:'Cancelar',
+    confirmImportOverwrite:'Os dados de medição atuais serão substituídos pelos dados importados. Continuar?',
     noDataLabel:'Sem dados',
     exportBtn:'📤 Exportar', importBtn:'📥 Importar',
     startAudioFirst:'Inicie o áudio primeiro',
@@ -1998,41 +2007,6 @@ function lockDevices(locked) {
   }
 }
 
-/** 弹出确认对话框，返回 Promise<boolean> */
-function showConfirmDialog(message) {
-  return new Promise((resolve) => {
-    const overlay = document.createElement('div');
-    overlay.className = 'confirm-overlay';
-    overlay.innerHTML = `
-      <div class="confirm-box">
-        <p>${message}</p>
-        <div class="confirm-actions">
-          <button class="btn btn-secondary btn-sm confirm-cancel-btn">${tr('confirmCancel')}</button>
-          <button class="btn btn-primary btn-sm confirm-ok-btn">${tr('confirmOk')}</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    const okBtn = overlay.querySelector('.confirm-ok-btn');
-    const cancelBtn = overlay.querySelector('.confirm-cancel-btn');
-
-    const close = (result) => {
-      overlay.remove();
-      resolve(result);
-    };
-
-    okBtn.addEventListener('click', () => close(true));
-    cancelBtn.addEventListener('click', () => close(false));
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) close(false);
-    });
-    // ESC 键关闭
-    const onKey = (e) => { if (e.key === 'Escape') { close(false); document.removeEventListener('keydown', onKey); } };
-    document.addEventListener('keydown', onKey);
-  });
-}
-
 // ---- Event Listeners ----
 function setupEventListeners() {
   // Volume & Gain
@@ -2204,15 +2178,14 @@ function setupEventListeners() {
   });
 
   // 自动 PEQ
-  document.getElementById('autoPeqBtn').addEventListener('click', async () => {
+  document.getElementById('autoPeqBtn').addEventListener('click', () => {
     if (!freqData || freqData.length < 5) {
       setStatus('error', tr('error'), tr('noSweepData'));
       return;
     }
     // 已有 PEQ 配置时弹出确认对话框
     if (peqMgr && peqMgr.list.length > 0) {
-      const confirmed = await showConfirmDialog(tr('confirmClearPeq'));
-      if (!confirmed) return;
+      if (!confirm(tr('confirmClearPeq'))) return;
     }
     const count = parseInt(document.getElementById('autoPeqCount').value) || 5;
     const fLow = parseFloat(document.getElementById('autoPeqFreqLow').value) || 50;
@@ -2420,6 +2393,11 @@ function exportRew() {
 function importData(e) {
   const file = e.target.files[0];
   if (!file) return;
+  // 已有数据时确认是否替换
+  if (freqData && !confirm(tr('confirmImportOverwrite'))) {
+    e.target.value = '';
+    return;
+  }
   const reader = new FileReader();
   reader.onload = (ev) => {
     try {
