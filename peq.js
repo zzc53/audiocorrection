@@ -509,14 +509,8 @@
     for (let k = 0; k < K; k++) {
       phi[k] = _sq(Math.sin(Math.PI / fs * freqs[k]));
     }
-    // Frequency weights: de-emphasize high frequencies where comb-filter artifacts dominate
-    const freqWeight = new Float64Array(K);
-    for (let k = 0; k < K; k++) {
-      const f = freqs[k];
-      if (f <= 5000) freqWeight[k] = 1.0;
-      else if (f >= 12000) freqWeight[k] = 0.01;
-      else freqWeight[k] = 1.0 - (f - 5000) / 7000 * 0.99;
-    }
+    // Frequency weights: disabled (redundant with 10kHz+ smoothing and gain cap)
+    const freqWeight = null;
 
     // State vector: [ln(f0)_0..N-1, gain_0..N-1, bw_0..N-1, amp]
     const nState = 3 * N + 1;
@@ -643,7 +637,7 @@
     const lscFreqLim = { lo: Math.max(fl, 20), hi: Math.min(fh, 500) };
     const hscFreqLim = { lo: Math.max(fl, 1500), hi: Math.min(fh, 2500) };
     const shelfQLim = { lo: 0.4, hi: 3 };
-    const shelfGainCap = Math.min(maxGain, 6);
+    const shelfGainCap = Math.min(maxGain, 10);
     const shelfGainLim = { lo: -shelfGainCap, hi: shelfGainCap };
 
     for (let n = 0; n < N; n++) {
@@ -699,7 +693,7 @@
     // Build output
     const bands = [];
     for (let n = 0; n < N; n++) {
-      if (Math.abs(gain[n]) < 0.3) continue;
+      if (Math.abs(gain[n]) < 0.1) continue;
       bands.push({
         freq: f0[n],
         gain: gain[n],
@@ -729,7 +723,7 @@
 
     // Round and filter
     const result = bands
-      .filter(b => Math.abs(b.gain) >= 0.5)
+      .filter(b => Math.abs(b.gain) >= 0.3)
       .map(b => ({
         freq: Math.round(b.freq),
         gain: Math.round(b.gain * 10) / 10,
@@ -737,6 +731,13 @@
         type: b.type,
       }));
     result.sort((a, b) => a.freq - b.freq);
+
+    // Cap gain for PK filters above 10kHz: narrow features there are mostly measurement artifacts
+    for (const b of result) {
+      if (b.freq > 10000 && b.type === 'PK') {
+        b.gain = Math.max(-6, Math.min(6, b.gain));
+      }
+    }
 
     // Remove exact duplicates (same freq, type, and approximate gain/Q after rounding)
     for (let i = result.length - 1; i >= 1; i--) {
